@@ -2,7 +2,7 @@
 (function (root) {
     const T = {
         DURATION: 52.5,
-        FPS: 30,
+        FPS: 24,
         /* ACT I: night shift, the struggle */
         coldOpen: [0, 2.4],
         push1: [1.8, 3.9], slip1: [4.15, 4.45],

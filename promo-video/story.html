@@ -290,10 +290,10 @@ const bulb = add(new THREE.SphereGeometry(.45, 16, 12), new THREE.MeshBasicMater
 add(new THREE.CylinderGeometry(.06, .06, 10, 6), matSteel, lampPos.x, lampPos.y + 5.5, lampPos.z);
 const sodium = new THREE.SpotLight(0xff9d4a, 3.2, 70, .62, .7, 1.2);
 sodium.position.copy(lampPos); sodium.target.position.set(-5, 0, -1); scene.add(sodium); scene.add(sodium.target);
-sodium.castShadow = true; sodium.shadow.mapSize.set(2048, 2048); sodium.shadow.bias = -.0004; sodium.shadow.camera.near = 5; sodium.shadow.camera.far = 60;
+sodium.castShadow = true; sodium.shadow.mapSize.set(1024, 1024); sodium.shadow.bias = -.0004; sodium.shadow.camera.near = 5; sodium.shadow.camera.far = 60;
 const moon = new THREE.DirectionalLight(0x6f8fd0, .55); moon.position.set(30, 18, -30); scene.add(moon);
 const sun = new THREE.DirectionalLight(0xffc98f, 0); sun.position.set(40, 22, -34); sun.target.position.set(-6, 0, 0); scene.add(sun); scene.add(sun.target);
-sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -25, right: 25, top: 25, bottom: -25, near: 10, far: 120 }); sun.shadow.bias = -.0004;
+sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -25, right: 25, top: 25, bottom: -25, near: 10, far: 120 }); sun.shadow.bias = -.0004;
 const hemi = new THREE.HemisphereLight(0x9fb4d8, 0x1a1410, .12); scene.add(hemi);
 // light cone under the lamp, morning shafts through the windows
 const vgrad = (top, bot) => { const c = document.createElement('canvas'); c.width = 4; c.height = 256; const g = c.getContext('2d'); const gr = g.createLinearGradient(0, 0, 0, 256); gr.addColorStop(0, top); gr.addColorStop(1, bot); g.fillStyle = gr; g.fillRect(0, 0, 4, 256); return new THREE.CanvasTexture(c); };
@@ -903,7 +903,7 @@ function copyAt(t, cam) {
    10. Frame
 ------------------------------------------------------------------- */
 function samplesAt(t) {
-    if (t > TL.open[0] - .1 && t < TL.open[1] + .1) return 6;
+    if (t > TL.open[0] - .1 && t < TL.open[1] + .1) return 4;
     if ((t > TL.slip1[0] && t < TL.slip1[0] + .8) || (t > TL.slip2[0] && t < TL.slip2[0] + .8)) return 4;
     if (t > TL.drop[0] && t < TL.drop[1] + .1) return 3;
     if (t > TL.wheelIn[0] && t < TL.wheelIn[1] + .1) return 4;
