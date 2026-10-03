@@ -1,0 +1,10 @@
+node_modules
+*.log
+verify_*
+*.wav
+*.mp4
+*.ps1
+build-voiceover.js
+create-promo-video.js
+promo-autopilot.js
+serve.js

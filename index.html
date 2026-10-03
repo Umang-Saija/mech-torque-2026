@@ -1,0 +1,1006 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>MT30 worm gear operator | Mech Torque</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="description"
+        content="MT30 manual worm gear operator for butterfly valves, 700 Nm. Scroll to watch it assemble in 3D.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Space+Grotesk:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap"
+        rel="stylesheet">
+        <link rel="stylesheet" href="styles.css?v=27">
+    <style id="specs-card-fix">
+        /* Unconditional high-contrast daylight frosted glass for Hero specs card */
+        #specs, .specs {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%) !important;
+            background-color: #ffffff !important;
+            border: 1.5px solid rgba(14, 165, 233, 0.35) !important;
+            border-top: 3px solid #0284c7 !important;
+            border-radius: 14px !important;
+            box-shadow: 0 16px 36px -4px rgba(15, 23, 42, 0.12), 0 4px 14px rgba(2, 132, 199, 0.08) !important;
+        }
+        #specs dt, .specs dt {
+            color: #475569 !important;
+            border-right: 1.5px solid rgba(15, 23, 42, 0.12) !important;
+            border-top: 1px solid rgba(15, 23, 42, 0.08) !important;
+            font-weight: 700 !important;
+        }
+        #specs dt:first-of-type, .specs dt:first-of-type {
+            border-top: 0 !important;
+        }
+        #specs dd, .specs dd {
+            color: #0f172a !important;
+            border-top: 1px solid rgba(15, 23, 42, 0.08) !important;
+            font-weight: 800 !important;
+            white-space: nowrap !important;
+        }
+        #specs dd:first-of-type, .specs dd:first-of-type {
+            border-top: 0 !important;
+        }
+        #specs dd:nth-of-type(2), .specs dd:nth-of-type(2) {
+            color: #0284c7 !important;
+            font-weight: 800 !important;
+        }
+    </style>
+</head>
+
+<body id="top">
+    <header class="site-nav" id="siteNav">
+        <a class="brand" href="#top" aria-label="Mech Torque home">
+            <div class="brand-gear-wrap"><img src="mech_torque_gear_icon.png?v=5" class="brand-gear-img" alt="Mech Torque Logo"><div class="brand-gear-shine" aria-hidden="true"></div></div>
+            <div class="word">
+                <span>MECH TORQUE</span>
+                <small>Manufacturing Gearbox · Rajkot</small>
+            </div>
+        </a>
+        <div class="nav-status">
+            <span class="pulse-dot"></span>
+            <span>Works Operational · ISO 5211</span>
+        </div>
+        <div class="nav-right">
+            <nav class="nav-links" id="navLinks">
+                <a href="#about" data-nav>About</a>
+                <a href="#materials" data-nav>Materials</a>
+                <a href="#models" data-nav>Models</a>
+                <a href="#contact" data-nav>Contact</a>
+            </nav>
+            <a class="nav-cta" href="#contact">
+                <span>Get a Quote</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+            <button class="nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false"><span></span></button>
+        </div>
+        <div class="nav-progress-track" aria-hidden="true">
+            <div class="nav-progress-bar" id="navProgressBar"></div>
+        </div>
+    </header>
+    <main id="track">
+
+        <section id="pin" aria-label="Interactive 3D assembly of the MT30 worm gear operator">
+            <canvas id="gl" role="img"
+                aria-label="3D model of the MT30 gearbox. Scroll to assemble it, drag to rotate."></canvas>
+            <svg id="calloutSvg" class="callout-svg" aria-hidden="true">
+                <defs>
+                    <radialGradient id="beamGlow" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stop-color="#00f0ff" stop-opacity="0.9" />
+                        <stop offset="45%" stop-color="#0284c7" stop-opacity="0.5" />
+                        <stop offset="100%" stop-color="#0284c7" stop-opacity="0" />
+                    </radialGradient>
+                </defs>
+                <line id="calloutLine" x1="0" y1="0" x2="0" y2="0" />
+                <circle id="calloutHalo" cx="0" cy="0" r="22" fill="url(#beamGlow)" />
+                <circle id="calloutRing" cx="0" cy="0" r="10" />
+                <circle id="calloutDot" cx="0" cy="0" r="4.5" />
+            </svg>
+            <div id="calloutLabel" class="callout-label"><span id="calloutTag"></span></div>
+            <div class="nogl">MT30 worm gear operator. 700 Nm. Flanges F07, F10, F12. The 3D view needs WebGL.</div>
+
+            <div class="copy is-hero" id="copy">
+                <p class="tag" id="tag"></p>
+                <h1 id="head">MT30 worm gear operator</h1>
+                <p id="lede">A 700 Nm manual gearbox for butterfly valves. Scroll to assemble it.</p>
+                <dl class="specs" id="specs">
+                    <dt>Model</dt>
+                    <dd>MT30</dd>
+                    <dt>Torque</dt>
+                    <dd>700 Nm</dd>
+                    <dt>Flanges</dt>
+                    <dd>F07, F10, F12</dd>
+                </dl>
+                <div class="hero-actions-bar">
+                    <a class="cta" id="cta" href="mailto:infomechtorque@gmail.com?subject=MT30%20enquiry">Send an enquiry</a>
+                    <a class="hero-mobile-jump" href="#models" aria-label="Jump directly to valve gearbox models catalogue">
+                        <span class="hero-jump-dot"></span>
+                        <span>Models Catalog (250 - 2000 Nm)</span>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 13l5 5 5-5M12 4v14"/></svg>
+                    </a>
+                </div>
+
+                <!-- Interactive Mobile 3D Model Viewport Scrubber & Presets -->
+                <div class="mobile-3d-presets mobile-only" id="mobile3dPresets" aria-label="Interactive 3D model controls">
+                    <button type="button" class="preset-pill" data-stage="0">
+                        <span class="pill-icon">🔍</span>
+                        <span>Exploded</span>
+                    </button>
+                    <button type="button" class="preset-pill" data-stage="6">
+                        <span class="pill-icon">⚙️</span>
+                        <span>Drive Mesh</span>
+                    </button>
+                    <button type="button" class="preset-pill active" data-stage="11">
+                        <span class="pill-icon">🔒</span>
+                        <span>Assembled</span>
+                    </button>
+                    <a href="#about" class="preset-pill preset-skip" aria-label="Skip to details">
+                        <span>Specs ↓</span>
+                    </a>
+                </div>
+            </div>
+
+            <ol class="rail" id="rail" aria-hidden="true"></ol>
+        </section>
+    </main>
+
+    <div class="site">
+
+        <!-- ABOUT -->
+        <section class="section" id="about">
+            <div class="section-inner">
+                <div class="about-eyebrow-wrap reveal">
+                    <span class="about-live-dot"></span>
+                    <span class="about-eyebrow-text">FOUNDRY &amp; CNC ENGINEERING · EST. RAJKOT, GUJARAT</span>
+                </div>
+                <h2 class="h-title reveal">Precision gearboxes for <span class="text-glow-gold">valve excellence</span></h2>
+                <p class="lead reveal">Mech Torque engineers zero-backlash manual worm-gear operators for critical industrial butterfly valves. Designed and manufactured in Rajkot, Gujarat — supplying global process industries with high-torque, self-locking actuation solutions.</p>
+
+                <!-- High-Tech Industry Trust Badges -->
+                <div class="about-pills-bar reveal">
+                    <div class="about-pill"><span class="about-pill-dot"></span>ISO 9001:2015 Quality Standards</div>
+                    <div class="about-pill"><span class="about-pill-dot"></span>ISO 5211 Standard Top Flange</div>
+                    <div class="about-pill"><span class="about-pill-dot"></span>100% Factory Backlash &amp; Pressure Tested</div>
+                    <div class="about-pill"><span class="about-pill-dot"></span>Zero-Backlash Worm Kinematics</div>
+                </div>
+
+                <!-- Mobile About Story Carousel Controls (Mobile Only) -->
+                <div class="mobile-carousel-nav mobile-only" id="aboutCarouselNav">
+                    <div class="carousel-swipe-hint">
+                        <span class="swipe-hand-icon">👈👉</span>
+                        <span class="swipe-text" id="aboutSwipeCounter">Swipe to explore (1 of 3)</span>
+                    </div>
+                    <div class="carousel-tabs-row" id="aboutCarouselTabs">
+                        <button type="button" class="c-tab active" data-slide="0">01 Foundry</button>
+                        <button type="button" class="c-tab" data-slide="1">02 Actuation</button>
+                        <button type="button" class="c-tab" data-slide="2">03 Sectors</button>
+                    </div>
+                </div>
+
+                <div class="about-grid reveal-stagger" id="aboutGrid">
+                    <!-- Bento Card 1: Main Heritage Hero -->
+                    <div class="about-card about-card-hero reveal" style="--i:0">
+                        <!-- Personalized 2D Engineering Draft Decal -->
+                        <div class="hand-drawn-accent accent-about" title="Precision Stainless Fastener">
+                            <img src="mech_screw_sketch.png" alt="Mechanical fastener screw" class="decal-img">
+                        </div>
+                        <div class="about-card-badge">
+                            <span class="badge-num">01</span>
+                            <span class="badge-code">FOUNDRY // ARCHITECTURE</span>
+                        </div>
+                        <h3>Precision Engineering Heritage</h3>
+                        <p class="about-card-lead">We specialize in zero-backlash quarter-turn gearboxes engineered specifically for industrial butterfly valves. Every casting is poured, induction-hardened, and CNC-machined under rigorous QA standards in Rajkot, India.</p>
+                        
+                        <div class="about-specs-list">
+                            <div class="spec-row">
+                                <span class="spec-check">✓</span>
+                                <span class="spec-text"><b>Monoblock Housing:</b> ASTM A48 Class 30A / IS 210 FG 200 Cast Iron</span>
+                            </div>
+                            <div class="spec-row">
+                                <span class="spec-check">✓</span>
+                                <span class="spec-text"><b>High-Tensile Worm Quadrant:</b> SGI 500/7 Ductile Iron sector gear</span>
+                            </div>
+                            <div class="spec-row">
+                                <span class="spec-check">✓</span>
+                                <span class="spec-text"><b>Hardened Drive Shaft:</b> 45C8 Carbon steel with ground worm threads</span>
+                            </div>
+                            <div class="spec-row">
+                                <span class="spec-check">✓</span>
+                                <span class="spec-text"><b>Environmental Ingress:</b> IP67 Weatherproof sealed grease chamber</span>
+                            </div>
+                        </div>
+
+                        <!-- Micro gear blueprint watermark in background -->
+                        <div class="card-gear-watermark" aria-hidden="true">
+                            <svg viewBox="0 0 100 100" fill="none" stroke="currentColor">
+                                <circle cx="50" cy="50" r="38" stroke-width="2" stroke-dasharray="4 3"/>
+                                <circle cx="50" cy="50" r="22" stroke-width="2"/>
+                                <circle cx="50" cy="50" r="8" fill="currentColor"/>
+                                <path d="M50 8 L50 20 M50 80 L50 92 M8 50 L20 50 M80 50 L92 50 M20 20 L28 28 M72 72 L80 80 M20 80 L28 72 M72 28 L80 20" stroke-width="3"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Bento Card 2: What We Offer / Actuation Range -->
+                    <div class="about-card card-accent-gear reveal" style="--i:1; position: relative;">
+                        <div class="hand-drawn-accent accent-bronze-gear" title="Machined Bronze Sector Gear">
+                            <img src="brass_bronze_gear.png" alt="Machined bronze gear" class="decal-img decal-gear">
+                        </div>
+                        <div class="about-card-badge">
+                            <span class="badge-num">02</span>
+                            <span class="badge-code">PORTFOLIO // RANGE</span>
+                        </div>
+                        <h3>Quarter-Turn Valve Operators</h3>
+                        <p>Complete torque spectrum from compact 250 Nm pilot operators to 2,000 Nm heavy pipeline operators. Engineered with self-locking lead angles that securely hold disc position at any point in the 90° travel without counter-brakes.</p>
+                        
+                        <div class="torque-spectrum-box">
+                            <div class="spectrum-labels">
+                                <span>250 Nm</span>
+                                <span class="spectrum-flagship">MT-30 · 700 Nm</span>
+                                <span>2000 Nm</span>
+                            </div>
+                            <div class="spectrum-bar">
+                                <div class="spectrum-fill"></div>
+                            </div>
+                            <span class="spectrum-sub">Self-Locking 90° Butterfly Valve Travel</span>
+                        </div>
+                    </div>
+
+                    <!-- Bento Card 3: Who We Serve / Severe Service -->
+                    <div class="about-card card-accent-nut reveal" style="--i:2; position: relative;">
+                        <!-- Personalized 2D Engineering Draft Decal -->
+                        <div class="hand-drawn-accent accent-nut" title="Heavy Flange Nut">
+                            <img src="mech_nut_sketch.png" alt="Heavy flange hex nut" class="decal-img decal-nut">
+                        </div>
+                        <div class="about-card-badge">
+                            <span class="badge-num">03</span>
+                            <span class="badge-code">APPLICATION // SECTORS</span>
+                        </div>
+                        <h3>Severe Process Industries</h3>
+                        <p>Trusted across critical plant installations requiring zero downtime, high mechanical advantage, and resistance to corrosive industrial environments.</p>
+                        
+                        <div class="industry-sectors-grid">
+                            <div class="industry-pill">
+                                <span class="ind-icon">🛢</span>
+                                <span>Oil &amp; Petrochemical</span>
+                            </div>
+                            <div class="industry-pill">
+                                <span class="ind-icon">⚡</span>
+                                <span>Power &amp; Energy Plants</span>
+                            </div>
+                            <div class="industry-pill">
+                                <span class="ind-icon">💧</span>
+                                <span>Water &amp; Wastewater</span>
+                            </div>
+                            <div class="industry-pill">
+                                <span class="ind-icon">🚢</span>
+                                <span>Marine &amp; Process Valves</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- High-Tech Illuminated Telemetry Modules -->
+                <div class="stat-strip reveal-stagger">
+                    <div class="stat reveal" style="--i:0">
+                        <div class="stat-top">
+                            <span class="stat-label">FLAGSHIP OUTPUT</span>
+                            <span class="stat-pip gold-pip"></span>
+                        </div>
+                        <b class="stat-val-gold">700 Nm</b>
+                        <span class="stat-desc">MT-30 Rated Output Torque</span>
+                        <div class="stat-micro-meter"><div class="stat-meter-fill gold-fill" style="width: 70%"></div></div>
+                    </div>
+
+                    <div class="stat reveal" style="--i:1">
+                        <div class="stat-top">
+                            <span class="stat-label">MODELS MATRIX</span>
+                            <span class="stat-pip cyan-pip"></span>
+                        </div>
+                        <b class="stat-val-cyan">6 Models</b>
+                        <span class="stat-desc">MT-20 up to MT-80 Range</span>
+                        <div class="stat-micro-meter"><div class="stat-meter-fill cyan-fill" style="width: 100%"></div></div>
+                    </div>
+
+                    <div class="stat reveal" style="--i:2">
+                        <div class="stat-top">
+                            <span class="stat-label">GLOBAL FITMENT</span>
+                            <span class="stat-pip green-pip"></span>
+                        </div>
+                        <b class="stat-val-white">ISO 5211</b>
+                        <span class="stat-desc">F07 / F10 / F12 / F14 Circles</span>
+                        <div class="stat-micro-meter"><div class="stat-meter-fill green-fill" style="width: 85%"></div></div>
+                    </div>
+
+                    <div class="stat reveal" style="--i:3">
+                        <div class="stat-top">
+                            <span class="stat-label">FOUNDRY CLUSTER</span>
+                            <span class="stat-pip gold-pip"></span>
+                        </div>
+                        <b class="stat-val-white">Rajkot, IN</b>
+                        <span class="stat-desc">22.30° N, 70.80° E · Gujarat</span>
+                        <div class="stat-micro-meter"><div class="stat-meter-fill gold-fill" style="width: 95%"></div></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MATERIALS & STANDARDS -->
+        <section class="section" id="materials">
+            <div class="section-inner">
+                <div class="mat-header-layout">
+                    <div class="mat-header-text">
+                        <div class="mat-eyebrow-wrap reveal">
+                            <span class="mat-live-dot"></span>
+                            <span class="mat-eyebrow-text">FOUNDRY METALLURGY · ASTM &amp; IS DUAL-STANDARD CERTIFIED</span>
+                        </div>
+                        <h2 class="h-title reveal">Certified Materials &amp; <span class="text-glow-cyan">Standards Specification</span></h2>
+                        <p class="lead reveal">Every Mech Torque valve operator is cast, induction-treated, and CNC-machined under rigorous metallurgical governance in Rajkot, India. Each transmission component complies with dual United States (ASTM) and Indian (IS) industrial standards for lifetime valve duty.</p>
+                    </div>
+                    <div class="mat-decor-wrap reveal" title="Worm Screw &amp; Quadrant Gear Assembly">
+                        <img src="mech_wormgear_sketch.png" alt="Worm screw and quadrant gear drive assembly" class="decor-standalone-img decor-wormgear">
+                    </div>
+                </div>
+
+                <!-- Mobile Metallurgy Alloy Carousel Controls (Mobile Only) -->
+                <div class="mobile-carousel-nav mobile-only" id="alloysCarouselNav">
+                    <div class="carousel-swipe-hint">
+                        <span class="swipe-hand-icon">👈👉</span>
+                        <span class="swipe-text" id="alloysSwipeCounter">Swipe metallurgy (1 of 4)</span>
+                    </div>
+                    <div class="carousel-tabs-row" id="alloysCarouselTabs">
+                        <button type="button" class="c-tab active" data-slide="0">Cast Iron</button>
+                        <button type="button" class="c-tab" data-slide="1">SGI 500/7</button>
+                        <button type="button" class="c-tab" data-slide="2">45C8 Steel</button>
+                        <button type="button" class="c-tab" data-slide="3">Alloy Pinion</button>
+                    </div>
+                </div>
+
+                <!-- 4 Core Metallurgy Alloy Bento Cards -->
+                <div class="alloys-bento-grid reveal-stagger" id="alloysGrid">
+                    <!-- Alloy 1: Monoblock Cast Iron -->
+                    <div class="alloy-card reveal" style="--i:0">
+                        <div>
+                            <div class="alloy-card-top">
+                                <span class="alloy-tag">HOUSING &amp; COVERS</span>
+                                <span class="alloy-iso-code">IS 210 FG 200</span>
+                            </div>
+                            <h3 class="alloy-name">ASTM A48 Class 30A</h3>
+                            <span class="alloy-spec-badge">High-Damping Monoblock Grey Iron</span>
+                            <p class="alloy-desc">Engineered for monoblock valve operator housings and end-covers. Superior graphite flake structure provides exceptional vibration absorption and pipeline shock mitigation under cyclic water hammer.</p>
+                        </div>
+                        <div class="alloy-meter-wrap">
+                            <div class="alloy-meter-header">
+                                <span>VIBRATION DAMPING</span>
+                                <span class="alloy-meter-val">200 MPa</span>
+                            </div>
+                            <div class="alloy-meter-track">
+                                <div class="alloy-meter-fill" style="width: 95%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alloy 2: SGI 500/7 Spheroidal Graphite Iron -->
+                    <div class="alloy-card reveal" style="--i:1">
+                        <div>
+                            <div class="alloy-card-top">
+                                <span class="alloy-tag">WORM WHEEL &amp; SPUR</span>
+                                <span class="alloy-iso-code">SGI 500/7</span>
+                            </div>
+                            <h3 class="alloy-name">ASTM A70-50-05</h3>
+                            <span class="alloy-spec-badge">Ductile Iron Sector Quadrant</span>
+                            <p class="alloy-desc">Nodular graphite matrix delivers immense tooth shear strength and resistance against hydraulic valve backpressure. Yields 7% elongation to prevent catastrophic brittle failure.</p>
+                        </div>
+                        <div class="alloy-meter-wrap">
+                            <div class="alloy-meter-header">
+                                <span>TOOTH SHEAR RATING</span>
+                                <span class="alloy-meter-val">500 MPa</span>
+                            </div>
+                            <div class="alloy-meter-track">
+                                <div class="alloy-meter-fill alloy-fill-gold" style="width: 92%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alloy 3: 45C8 Carbon Steel -->
+                    <div class="alloy-card reveal" style="--i:2">
+                        <div>
+                            <div class="alloy-card-top">
+                                <span class="alloy-tag">INPUT WORM &amp; SHAFT</span>
+                                <span class="alloy-iso-code">IS 45C8</span>
+                            </div>
+                            <h3 class="alloy-name">ASTM A576-1045</h3>
+                            <span class="alloy-spec-badge">High-Tensile Induction Steel</span>
+                            <p class="alloy-desc">Ground worm threads and high-rigidity input stems. Induction hardened drive surfaces deliver ultra-low friction coefficients and prevent thread galling under continuous manual or motorized cycling.</p>
+                        </div>
+                        <div class="alloy-meter-wrap">
+                            <div class="alloy-meter-header">
+                                <span>TENSILE STRENGTH</span>
+                                <span class="alloy-meter-val">750 MPa</span>
+                            </div>
+                            <div class="alloy-meter-track">
+                                <div class="alloy-meter-fill" style="width: 88%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alloy 4: 40CrMo3 & 52100 Alloy Steel -->
+                    <div class="alloy-card reveal" style="--i:3">
+                        <div>
+                            <div class="alloy-card-top">
+                                <span class="alloy-tag">PINION &amp; BEARINGS</span>
+                                <span class="alloy-iso-code">ASTM A295 52100</span>
+                            </div>
+                            <h3 class="alloy-name">ASTM A322-4140</h3>
+                            <span class="alloy-spec-badge">Vacuum-Degassed Chrome Alloy</span>
+                            <p class="alloy-desc">Chrome-moly reduction pinion gears paired with high-precision thrust bearing races. Absorbs axial thrust forces generated by the 90° worm kinematics without axial stem displacement.</p>
+                        </div>
+                        <div class="alloy-meter-wrap">
+                            <div class="alloy-meter-header">
+                                <span>WEAR ENDURANCE</span>
+                                <span class="alloy-meter-val">850+ MPa</span>
+                            </div>
+                            <div class="alloy-meter-track">
+                                <div class="alloy-meter-fill alloy-fill-gold" style="width: 98%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Category Filter Tabs -->
+                <div class="mat-tabs-bar reveal">
+                    <button class="mat-tab-btn active" data-category="all">
+                        <span>All Components</span>
+                        <span class="mat-tab-count">10</span>
+                    </button>
+                    <button class="mat-tab-btn" data-category="castings">
+                        <span>Structural Housings</span>
+                        <span class="mat-tab-count">4</span>
+                    </button>
+                    <button class="mat-tab-btn" data-category="gearing">
+                        <span>Gearing &amp; Quadrants</span>
+                        <span class="mat-tab-count">4</span>
+                    </button>
+                    <button class="mat-tab-btn" data-category="transmission">
+                        <span>Shafts &amp; Bearings</span>
+                        <span class="mat-tab-count">2</span>
+                    </button>
+                </div>
+
+                <!-- Liquid Glass Dual-Standards Table -->
+                <div class="table-wrap reveal">
+                    <div class="table-toolbar">
+                        <div class="table-title-pill">
+                            <span class="pulse-dot"></span>
+                            <span>CERTIFIED BILL OF TRANSMISSION MATERIALS</span>
+                        </div>
+                        <div class="table-search-box">
+                            <svg class="table-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                            <input type="text" id="matSearchInput" class="table-search-input" placeholder="Search component or standard...">
+                        </div>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="spec-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 70px;">ID</th>
+                                    <th>Component Description</th>
+                                    <th>Material Class</th>
+                                    <th>US Standard (ASTM)</th>
+                                    <th>Indian Standard (IS)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="materialsBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Foundry Quality & QA Verification Strip -->
+                <div class="mat-qa-strip reveal-stagger">
+                    <div class="mat-qa-card reveal" style="--i:0">
+                        <div class="mat-qa-icon">🛡️</div>
+                        <div class="mat-qa-content">
+                            <h4>IP67 Pressure Chamber Seal</h4>
+                            <p>All housings sealed with high-grade nitrile O-rings and pressurized nitrogen cavity testing against water ingress.</p>
+                        </div>
+                    </div>
+                    <div class="mat-qa-card reveal" style="--i:1">
+                        <div class="mat-qa-icon">🔬</div>
+                        <div class="mat-qa-content">
+                            <h4>Spectrometric Heat Analysis</h4>
+                            <p>Optical emission spectrometer calibration on every melt heat to guarantee carbon and alloy nodularity.</p>
+                        </div>
+                    </div>
+                    <div class="mat-qa-card reveal" style="--i:2">
+                        <div class="mat-qa-icon">⚙️</div>
+                        <div class="mat-qa-content">
+                            <h4>100% Full-Stroke Run-In</h4>
+                            <p>Every unit undergoes mechanical bench run-in to verify smooth self-locking tooth mesh and zero backlash.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXPLODED COMPONENTS / CATALOG GALLERY -->
+        <!-- MODELS (Pristine Architectural Light Theme · Mobile-Optimized) -->
+        <section class="section section-light" id="models">
+            <div class="section-inner">
+                <div class="model-header-grid">
+                    <div class="model-header-text">
+                        <div class="model-eyebrow-wrap reveal">
+                            <span class="model-live-dot"></span>
+                            <span class="model-eyebrow-text">ACTUATION PORTFOLIO · 250 NM TO 2000 NM</span>
+                        </div>
+                        <h2 class="h-title model-title-light reveal">Engineered for Every Valve Bore: <span class="text-glow-blue">Model Specification</span></h2>
+                        <p class="lead model-lead-light reveal">Quarter-turn manual worm operators calibrated for industrial butterfly, ball, and plug valves. High mechanical advantage gearing delivers effortless seating torque across standard, high-pressure, and severe-duty pipelines.</p>
+                    </div>
+                    <div class="model-decor-wrap reveal" title="Industrial Red Valve Handwheel">
+                        <img src="factory_valve_wheel_red.png?v=3" alt="Industrial safety-red valve handwheel" class="decor-standalone-img decor-red-wheel">
+                    </div>
+                </div>
+
+                <!-- Mobile-Optimized Quick Category Tabs (Drastically reduces vertical mobile scroll) -->
+                <div class="model-filter-bar reveal">
+                    <button class="model-filter-btn active" data-filter="all">All Models (6)</button>
+                    <button class="model-filter-btn" data-filter="pilot">Pilot &amp; Small Bore (MT-20 / 25)</button>
+                    <button class="model-filter-btn" data-filter="process">Process Valves (MT-30 / 40)</button>
+                    <button class="model-filter-btn" data-filter="heavy">Heavy Pipeline (MT-50 / 60)</button>
+                </div>
+
+                <!-- Mobile Model Specification Quick Carousel Controls (Mobile Only) -->
+                <div class="mobile-carousel-nav mobile-only" id="modelsCarouselNav">
+                    <div class="carousel-swipe-hint">
+                        <span class="swipe-hand-icon">👈👉</span>
+                        <span class="swipe-text" id="modelsSwipeCounter">Swipe models to compare (3 of 6)</span>
+                    </div>
+                    <div class="carousel-tabs-row model-tabs-row" id="modelsCarouselTabs">
+                        <button type="button" class="c-tab" data-m-idx="0">MT-20</button>
+                        <button type="button" class="c-tab" data-m-idx="1">MT-25</button>
+                        <button type="button" class="c-tab active" data-m-idx="2">MT-30 ★</button>
+                        <button type="button" class="c-tab" data-m-idx="3">MT-40</button>
+                        <button type="button" class="c-tab" data-m-idx="4">MT-50</button>
+                        <button type="button" class="c-tab" data-m-idx="5">MT-60</button>
+                    </div>
+                </div>
+
+                <div class="model-grid" id="modelGrid"></div>
+            </div>
+        </section>
+
+        <!-- CONTACT & FACTORY QUOTATION -->
+        <section class="section" id="contact">
+            <div class="section-inner">
+                <div class="contact-header-wrap reveal">
+                    <span class="contact-eyebrow">FACTORY DIRECT · RAJKOT, GUJARAT</span>
+                    <h2 class="h-title">Get an Official Quote for <span class="text-glow-cyan">Your Valve Project</span></h2>
+                    <p class="lead">Connect directly with our manufacturing works in Rajkot. Select your gearbox model below or contact our engineering team directly via Phone, WhatsApp, or Email for immediate pricing and delivery timelines.</p>
+                </div>
+
+                <!-- Mobile Contact Segmented View Switcher (Cuts vertical scroll in half) -->
+                <div class="mobile-contact-tabs mobile-only" id="contactSegmentTabs">
+                    <button type="button" class="contact-tab-btn active" data-view="quote">
+                        <span class="ctab-icon">⚡</span>
+                        <span>Instant RFQ Calculator</span>
+                    </button>
+                    <button type="button" class="contact-tab-btn" data-view="direct">
+                        <span class="ctab-icon">📞</span>
+                        <span>Direct Works Desk</span>
+                    </button>
+                </div>
+
+                <div class="contact-layout">
+                    <!-- Column 1: Direct Factory Contact Details -->
+                    <div class="contact-info-col reveal" style="--i:0">
+                        <div class="contact-info-card" style="position: relative;">
+                            <!-- Personalized 2D Engineering Draft Decal -->
+                            <div class="hand-drawn-accent accent-contact" title="Hydraulic Pressure Indicator">
+                                <img src="industrial_gauge.png" alt="Industrial hydraulic pressure gauge" class="decal-img decal-gauge">
+                            </div>
+                            <h3 class="contact-card-title">Direct Works Contact</h3>
+                            <p class="contact-card-desc">For urgent requirements, technical fitment queries, or bulk valve project orders, reach out to our team directly:</p>
+
+                            <div class="contact-channels">
+                                <!-- Phone Call -->
+                                <a href="tel:+919913191343" class="contact-channel-row">
+                                    <div class="channel-icon-box phone-box">
+                                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 2 .7 3a2 2 0 0 1-.5 2.1L8 10a16 16 0 0 0 6 6l1.2-1.3a2 2 0 0 1 2.1-.5c1 .4 2 .6 3 .7a2 2 0 0 1 1.7 2z"/></svg>
+                                    </div>
+                                    <div class="channel-details">
+                                        <span class="channel-label">PHONE / DIRECT CALL</span>
+                                        <span class="channel-value">+91 99131 91343</span>
+                                        <span class="channel-hint">Tap to call our production head directly</span>
+                                    </div>
+                                </a>
+
+                                <!-- WhatsApp -->
+                                <a href="https://wa.me/919913191343?text=Hi%20Mech%20Torque,%20I%20would%20like%20to%20enquire%20about%20valve%20gearboxes." target="_blank" rel="noopener" class="contact-channel-row">
+                                    <div class="channel-icon-box wa-box">
+                                        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24m4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.24-.74-.66-1.24-1.48-1.39-1.73-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43h-.47c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.44.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.1-.23-.17-.48-.29z"/></svg>
+                                    </div>
+                                    <div class="channel-details">
+                                        <span class="channel-label">WHATSAPP CHAT</span>
+                                        <span class="channel-value">+91 99131 91343</span>
+                                        <span class="channel-hint">Instant messaging &amp; PDF catalog share</span>
+                                    </div>
+                                </a>
+
+                                <!-- Email -->
+                                <a href="mailto:infomechtorque@gmail.com" class="contact-channel-row">
+                                    <div class="channel-icon-box mail-box">
+                                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                                    </div>
+                                    <div class="channel-details">
+                                        <span class="channel-label">EMAIL INQUIRIES</span>
+                                        <span class="channel-value">infomechtorque@gmail.com</span>
+                                        <span class="channel-hint">Send drawings, tender specs &amp; formal RFQs</span>
+                                    </div>
+                                </a>
+                            </div>
+
+                            <!-- Factory Address Block -->
+                            <div class="contact-address-block">
+                                <div class="address-icon">
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                </div>
+                                <div class="address-text">
+                                    <span class="address-label">MANUFACTURING WORKS &amp; OFFICE:</span>
+                                    <p class="address-lines">
+                                        Plot No. 10, Shed No. 1, Nr. Atul Industries,<br>
+                                        Akshar Weigh Bridge Street, Kalawad Road,<br>
+                                        Village: Khirsara, Rajkot – 360021, Gujarat, India.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Industrial Trust Badges -->
+                            <div class="contact-trust-strip">
+                                <div class="trust-item">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#10b981" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                                    <span>100% Factory Torque Tested</span>
+                                </div>
+                                <div class="trust-item">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#38bdf8" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                                    <span>ISO 5211 Standard Fitment</span>
+                                </div>
+                                <div class="trust-item">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#f5c542" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                                    <span>24–48h Standard Dispatch</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: Quick Model Quote Card -->
+                    <div class="contact-quote-col reveal" style="--i:1">
+                        <div class="contact-quote-card">
+                            <div class="quote-card-header">
+                                <span class="quote-card-badge">INSTANT QUOTE GENERATOR</span>
+                                <h3 class="quote-card-title">Select Model for Fast Pricing</h3>
+                                <p class="quote-card-subtitle">Choose your required gearbox model to view key dimensions and send an instant quote request:</p>
+                            </div>
+
+                            <!-- Model Selector Pills -->
+                            <div class="rfq-model-selector" id="rfqModelSelector">
+                                <button type="button" class="rfq-chip" data-m="MT-20">MT-20 (250 Nm)</button>
+                                <button type="button" class="rfq-chip" data-m="MT-25">MT-25 (500 Nm)</button>
+                                <button type="button" class="rfq-chip active" data-m="MT-30">MT-30 (700 Nm ★)</button>
+                                <button type="button" class="rfq-chip" data-m="MT-40">MT-40 (1000 Nm)</button>
+                                <button type="button" class="rfq-chip" data-m="MT-50">MT-50 (1500 Nm)</button>
+                                <button type="button" class="rfq-chip" data-m="MT-60">MT-60 (2000 Nm)</button>
+                            </div>
+
+                            <!-- Clean, High-Contrast Specification Box -->
+                            <div class="quote-spec-box">
+                                <div class="quote-spec-row main-torque-row">
+                                    <span class="spec-label">Rated Output Torque</span>
+                                    <b class="spec-val-big" id="rfqTorque">700 Nm</b>
+                                </div>
+                                <div class="quote-spec-grid">
+                                    <div class="quote-spec-cell">
+                                        <span class="spec-label">ISO 5211 Mounting</span>
+                                        <b class="spec-val" id="rfqPcd">F07, F10, F12</b>
+                                    </div>
+                                    <div class="quote-spec-cell">
+                                        <span class="spec-label">Max Stem Bore</span>
+                                        <b class="spec-val" id="rfqBore">Ø 32 mm</b>
+                                    </div>
+                                    <div class="quote-spec-cell">
+                                        <span class="spec-label">Handwheel Size</span>
+                                        <b class="spec-val" id="rfqWheel">Ø 350 mm</b>
+                                    </div>
+                                    <div class="quote-spec-cell">
+                                        <span class="spec-label">Rotation Angle</span>
+                                        <b class="spec-val">90° ± 5° Stops</b>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Direct Action Buttons -->
+                            <div class="quote-actions">
+                                <a id="rfqWaBtn" href="https://wa.me/919913191343?text=Hi%20Mech%20Torque,%20I%20would%20like%20to%20request%20a%20quotation%20for%20model%20MT-30%20(700%20Nm)." target="_blank" rel="noopener" class="btn-primary-wa">
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24m4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.24-.74-.66-1.24-1.48-1.39-1.73-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43h-.47c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.44.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.1-.23-.17-.48-.29z"/></svg>
+                                    <span>Get Quote on WhatsApp</span>
+                                </a>
+
+                                <a id="rfqMailBtn" href="mailto:infomechtorque@gmail.com?subject=RFQ%20Specification:%20MT-30%20(700%20Nm)" class="btn-secondary-email">
+                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                                    <span>Send Inquiry by Email</span>
+                                </a>
+                            </div>
+
+                            <p class="quote-card-note">All quotes include dimensional drawings, material certificates, and factory dispatch schedule.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- MODEL DETAIL MODAL -->
+    <div class="model-modal-overlay" id="modelModalOverlay" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="model-modal-backdrop" id="modelModalBackdrop"></div>
+        <div class="model-modal-container">
+            <button class="model-modal-close" id="modelModalClose" aria-label="Close modal">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <div class="model-modal-header">
+                <div class="modal-badge-row">
+                    <span class="modal-badge" id="modalTag">QUARTER-TURN OPERATOR</span>
+                    <span class="modal-iso">ISO 5211 COMPLIANT</span>
+                </div>
+                <h2 id="modalTitle">MT-30 Gearbox Specification</h2>
+                <p id="modalSub">Engineered for quarter-turn butterfly valve actuation with self-locking worm drive mechanism.</p>
+            </div>
+            
+            <div class="model-modal-grid">
+                <!-- Column 1: Core Performance Specs -->
+                <div class="modal-col">
+                    <div class="modal-card-stat">
+                        <span class="stat-lbl">RATED OUTPUT TORQUE</span>
+                        <div class="stat-val-row">
+                            <b id="modalTorque">700</b><span class="stat-unit">Nm</span>
+                        </div>
+                        <div class="modal-bar"><div class="modal-bar-fill" id="modalBarFill"></div></div>
+                    </div>
+
+                    <div class="modal-spec-list">
+                        <div class="modal-spec-row">
+                            <span>ISO 5211 Mounting</span>
+                            <b id="modalPcd">F07, F10, F12</b>
+                        </div>
+                        <div class="modal-spec-row">
+                            <span>Max Stem Bore</span>
+                            <b id="modalBore">Ø32 mm (Keyed)</b>
+                        </div>
+                        <div class="modal-spec-row">
+                            <span>Handwheel Diameter</span>
+                            <b id="modalWheel">Ø350 mm</b>
+                        </div>
+                        <div class="modal-spec-row">
+                            <span>Housing Material</span>
+                            <b>Cast Iron FG 200 (ASTM A48-83)</b>
+                        </div>
+                        <div class="modal-spec-row">
+                            <span>Worm Wheel</span>
+                            <b>Ductile Iron SGI 500/7</b>
+                        </div>
+                        <div class="modal-spec-row">
+                            <span>Worm Shaft</span>
+                            <b>Hardened 45C8 Carbon Steel</b>
+                        </div>
+                        <div class="modal-spec-row">
+                            <span>Travel Angle</span>
+                            <b>90° ± 5° Adjustable Stops</b>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Column 2: Envelope Dimensions A-H & Engineering CAD Viewport -->
+                <div class="modal-col">
+                    <div class="modal-envelope-card">
+                        <div class="modal-envelope-head">
+                            <div>
+                                <h4>Dimensional Envelope (mm)</h4>
+                                <p class="modal-envelope-sub">Hover or tap any dimension to inspect clearance, mounting geometry &amp; CAD lines</p>
+                            </div>
+                            <span class="cad-badge-live">OFFICIAL CAD DRAWING</span>
+                        </div>
+
+                        <div class="modal-dims-grid" id="modalDimsGrid">
+                            <!-- Populated dynamically: A, B, C, D, E, F, G, H with clear User POV titles -->
+                        </div>
+
+                        <!-- Authentic CAD Engineering Blueprint Station -->
+                        <div class="modal-cad-viewport">
+                            <div class="cad-viewport-header">
+                                <div class="cad-status-left">
+                                    <span class="cad-dot"></span>
+                                    <span class="cad-title">GENERAL ARRANGEMENT (GA) SECTIONAL BLUEPRINT</span>
+                                </div>
+                                <div class="cad-meta-right" id="cadModelTag">MT-30 CAD SPEC</div>
+                            </div>
+
+                            <div class="cad-drawing-container">
+                                <div class="cad-drawing-stage" id="cadDrawingStage">
+                                    <img src="catalog_dimensional_drawing.png" alt="Mech Torque General Arrangement Dimensional CAD Drawing" class="cad-blueprint-img" id="cadBlueprintImg">
+                                    <div class="cad-pin-layer" id="cadPinLayer">
+                                        <!-- Populated via JS for A, B, C, D, E, F, G, H -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Live User POV Dimension Telemetry Bar -->
+                            <div class="cad-telemetry-bar" id="cadTelemetryBar">
+                                <div class="telemetry-lead">
+                                    <span class="telemetry-badge" id="telemKey">DIM A</span>
+                                    <span class="telemetry-name" id="telemName">Housing Length</span>
+                                    <span class="telemetry-val" id="telemVal">142 mm</span>
+                                </div>
+                                <div class="telemetry-desc" id="telemDesc">
+                                    Total vertical height of the gearbox casing from valve mounting axis to top cover. Ensures overhead clearance in dense pipe racks.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="model-modal-footer">
+                <a id="modalWaBtn" href="#" target="_blank" rel="noopener" class="modal-btn-wa">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24m4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.24-.74-.66-1.24-1.48-1.39-1.73-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43h-.47c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.44.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.1-.23-.17-.48-.29z"/></svg>
+                    <span>Inquire via WhatsApp</span>
+                </a>
+                <a id="modalMailBtn" href="#" class="modal-btn-quote">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                    <span>Request Quotation</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <footer class="site-footer" id="siteFooter">
+        <div class="site-footer-inner">
+            <div class="footer-main-grid">
+                <!-- Column 1: Foundry & Engineering Identity -->
+                <div class="footer-brand-col">
+                    <a class="brand footer-brand" href="#top" aria-label="Mech Torque home">
+                        <div class="brand-gear-wrap">
+                            <img src="mech_torque_gear_icon.png?v=5" class="brand-gear-img" alt="Mech Torque Logo">
+                            <div class="brand-gear-shine" aria-hidden="true"></div>
+                        </div>
+                        <div class="word">
+                            <span>MECH TORQUE</span>
+                            <small>Industrial Valve Gearboxes</small>
+                        </div>
+                    </a>
+                    <p class="footer-tagline">
+                        Precision quarter-turn worm gearboxes manufactured for critical flow control in water, power, chemical &amp; marine valve systems.
+                    </p>
+                    <div class="footer-provenance-badge">
+                        <span class="live-status-dot"></span>
+                        <span>Khirsara Works · Rajkot, Gujarat</span>
+                    </div>
+                    <div class="footer-action-wrap">
+                        <a href="Mechtorque Catalogue 2025.pdf" target="_blank" rel="noopener" class="footer-catalog-btn">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <span>Download 2025 Catalog (PDF)</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Column 2: Valve Actuator Models -->
+                <div class="footer-col">
+                    <h4 class="footer-col-title">Valve Operators</h4>
+                    <ul class="footer-links-list">
+                        <li><a href="#models">MT-20 <span class="f-sub">250 Nm · Pilot Bore</span></a></li>
+                        <li><a href="#models">MT-25 <span class="f-sub">500 Nm · Standard</span></a></li>
+                        <li><a href="#models" class="is-featured-link">MT-30 <span class="f-sub">700 Nm ★ Flagship</span></a></li>
+                        <li><a href="#models">MT-40 <span class="f-sub">1000 Nm · Heavy Process</span></a></li>
+                        <li><a href="#models">MT-50 <span class="f-sub">1500 Nm · High Torque</span></a></li>
+                        <li><a href="#models">MT-60 <span class="f-sub">2000 Nm · Large Bore</span></a></li>
+                    </ul>
+                </div>
+
+                <!-- Column 3: Engineering Standards & Credentials -->
+                <div class="footer-col">
+                    <h4 class="footer-col-title">Foundry Standards</h4>
+                    <ul class="footer-standards-list">
+                        <li>
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#f5c542" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            <span><b>ISO 5211:</b> Valve Top-Flange Fitment</span>
+                        </li>
+                        <li>
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#f5c542" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            <span><b>IS 210 FG 200:</b> High-Tensile Cast Iron</span>
+                        </li>
+                        <li>
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#f5c542" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            <span><b>SGI 500/7:</b> Ductile Iron Worm Wheel</span>
+                        </li>
+                        <li>
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#f5c542" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            <span><b>45C8 Steel:</b> Case-Hardened Drive Worm</span>
+                        </li>
+                        <li>
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#f5c542" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            <span><b>IP65 Rating:</b> Enclosure Sealing</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Column 4: Quick Works Directory (No duplicate copy text) -->
+                <div class="footer-col">
+                    <h4 class="footer-col-title">Factory Desk</h4>
+                    <div class="footer-quick-desk">
+                        <div class="desk-entry">
+                            <span class="desk-lbl">DIRECT WORKS PHONE</span>
+                            <a href="tel:+919913191343" class="desk-val-link">+91 99131 91343</a>
+                        </div>
+                        <div class="desk-entry">
+                            <span class="desk-lbl">WHATSAPP INQUIRY</span>
+                            <a href="https://wa.me/919913191343?text=Hi%20Mech%20Torque,%20I%20would%20like%20to%20enquire%20about%20valve%20gearboxes." target="_blank" rel="noopener" class="desk-val-link wa-text">+91 99131 91343</a>
+                        </div>
+                        <div class="desk-entry">
+                            <span class="desk-lbl">TECHNICAL RFQ DESK</span>
+                            <a href="mailto:infomechtorque@gmail.com" class="desk-val-link">infomechtorque@gmail.com</a>
+                        </div>
+                        <div class="desk-entry">
+                            <span class="desk-lbl">FACILITY LOCATION</span>
+                            <span class="desk-val-static">Khirsara GIDC, Kalawad Rd, Rajkot – 360021</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Bottom Bar -->
+            <div class="footer-bottom-bar">
+                <div class="footer-bottom-left">
+                    <span>&copy; <span id="yr"></span> Mech Torque. All rights reserved.</span>
+                    <span class="footer-sep">·</span>
+                    <span>Valve Actuation Division</span>
+                </div>
+                <div class="footer-bottom-center">
+                    <span class="flag-badge">🇮🇳 Precision Engineered &amp; Built in Rajkot, Gujarat</span>
+                </div>
+                <div class="footer-bottom-right">
+                    <a href="#top" class="back-to-top" aria-label="Scroll to top of page">
+                        <span>Back to Top</span>
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mobile Floating Quick-Action Dock (Mobile Only) -->
+    <nav class="mobile-dock mobile-only" id="mobileDock" aria-label="Mobile quick actions">
+        <a href="tel:+919913191343" class="dock-btn dock-call" aria-label="Call Works">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 2 .7 3a2 2 0 0 1-.5 2.1L8 10a16 16 0 0 0 6 6l1.2-1.3a2 2 0 0 1 2.1-.5c1 .4 2 .6 3 .7a2 2 0 0 1 1.7 2z"/></svg>
+            <span>Call</span>
+        </a>
+        <a href="https://wa.me/919913191343?text=Hi%20Mech%20Torque,%20I%20would%20like%20to%20enquire%20about%20valve%20gearboxes." target="_blank" rel="noopener" class="dock-btn dock-wa" aria-label="WhatsApp">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24m4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.24-.74-.66-1.24-1.48-1.39-1.73-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43h-.47c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.44.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.1-.23-.17-.48-.29z"/></svg>
+            <span>WhatsApp</span>
+        </a>
+        <a href="#models" class="dock-btn dock-models" aria-label="Browse Models">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            <span>Models</span>
+        </a>
+        <a href="#contact" class="dock-btn dock-rfq" aria-label="Instant RFQ">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <span>Get Quote</span>
+        </a>
+    </nav>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="model3d.js?v=8"></script>
+    <script src="main.js?v=9"></script>
+</body>
+
+</html>
