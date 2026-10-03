@@ -45,7 +45,7 @@ const server = http.createServer((req, res) => {
     const page = await browser.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
     page.on('console', m => { if (m.type() === 'error') console.error('[page]', m.text()); });
     page.on('pageerror', e => console.error('[pageerror]', e.message));
-    await page.goto(`http://127.0.0.1:${port}/promo-video/${COMP}.html?w=${W}&h=${H}`);
+    await page.goto(`http://127.0.0.1:${port}/promo-video/${COMP}.html?w=${W}&h=${H}${args.people === '0' ? '&people=0' : ''}`);
     await page.waitForFunction(() => window.READY || window.READY_ERROR, null, { timeout: 120000 });
     const err = await page.evaluate(() => window.READY_ERROR);
     if (err) throw new Error(err);
@@ -54,7 +54,7 @@ const server = http.createServer((req, res) => {
     if (args.stills) {
         for (const s of String(args.stills).split(',').map(Number)) {
             await page.evaluate(t => window.renderAt(t), s);
-            const f = path.join(OUT_DIR, `${COMP}-still-${W}x${H}-${s.toFixed(2)}.png`);
+            const f = path.join(OUT_DIR, `${COMP}${args.people === '0' ? '-plate' : ''}-still-${W}x${H}-${s.toFixed(2)}.png`);
             await page.screenshot({ path: f, clip: { x: 0, y: 0, width: W, height: H }, timeout: 180000 });
             console.log('still', f);
         }

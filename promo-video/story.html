@@ -167,6 +167,7 @@
 const qs = new URLSearchParams(location.search);
 const W = +qs.get('w') || 1080, H = +qs.get('h') || 1920;
 const ASP = W / H, TALL = ASP < .7;
+const PEOPLE = qs.get('people') !== '0';   // people=0: product-only plates for compositing with live-action footage
 const stage = document.getElementById('stage');
 stage.style.width = W + 'px'; stage.style.height = H + 'px';
 const $ = id => document.getElementById(id);
@@ -645,7 +646,7 @@ function setWorld(t) {
     dustGeo.attributes.position.needsUpdate = true;
     dust.material.color.setHex(night ? 0xffb070 : 0xffe6c8);
     scene.updateMatrixWorld(true);
-    A.pose(poseA(t)); B.pose(poseB(t));
+    if (PEOPLE) { A.pose(poseA(t)); B.pose(poseB(t)); } else { A.pose({ visible: false }); B.pose({ visible: false }); }
 }
 [rimCool, rimWarm, topL, MT.key, MT.fill, MT.kick].forEach(l => l.userData.i = l.intensity);
 
@@ -672,8 +673,13 @@ const SHOTS = [
         [45.2, -.62, .14, 30, -7.2, 7.2, -.5, -.06], [46.4, -.82, .16, 26, -7.9, 7.6, -.7, -.06], [47.6, -.86, .3, 34, -6.8, 6.2, -.5, -.03], [52.5, -.9, .45, 44, -5, 5, 0, 0]] }
 ];
 function cr(p0, p1, p2, p3, t) { const t2 = t * t, t3 = t2 * t; return .5 * ((2 * p1) + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (-p0 + 3 * p1 - 3 * p2 + p3) * t3); }
+const PLATE_SHOTS = [   // product-only framing: gearbox, handwheel, pointer and disc together
+    { from: TL.install[0], to: TL.easy[0] - .001, shake: .25, keys: [[33.0, .62, .02, 30, -1.4, 9.5, 0, -.04], [35.7, .66, .08, 24, -1.4, 7.2, .2, -.04], [37.2, .62, .14, 20, -1.3, 6.8, .4, -.04]] },
+    { from: TL.easy[0], to: 99, shake: .2, keys: [[37.2, .62, .14, 20, -1.3, 6.8, .4, -.04], [38.7, .55, .2, 17.5, -1.4, 6.8, .5, -.04], [41.0, .42, .28, 16.5, -1.3, 6.9, .5, -.04], [43.2, .3, .36, 16, -1.1, 7.2, .4, -.04], [45.2, .22, .42, 17, -1.0, 7.0, .3, -.04]] }
+];
 function camAt(t) {
-    const s = SHOTS.find(s => t >= s.from && t <= s.to) || SHOTS[SHOTS.length - 1], K = s.keys;
+    const pool = !PEOPLE && t >= TL.install[0] ? PLATE_SHOTS : SHOTS;
+    const s = pool.find(s => t >= s.from && t <= s.to) || pool[pool.length - 1], K = s.keys;
     let out;
     if (t <= K[0][0]) out = K[0].slice(1); else if (t >= K[K.length - 1][0]) out = K[K.length - 1].slice(1);
     else {
