@@ -45,7 +45,7 @@ const server = http.createServer((req, res) => {
     const page = await browser.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
     page.on('console', m => { if (m.type() === 'error') console.error('[page]', m.text()); });
     page.on('pageerror', e => console.error('[pageerror]', e.message));
-    await page.goto(`http://127.0.0.1:${port}/promo-video/${COMP}.html?w=${W}&h=${H}${args.people === '0' ? '&people=0' : ''}`);
+    await page.goto(`http://127.0.0.1:${port}/promo-video/${COMP}.html?w=${W}&h=${H}${args.people === '0' ? '&people=0' : ''}${args.clean ? '&clean=1' : ''}`);
     await page.waitForFunction(() => window.READY || window.READY_ERROR, null, { timeout: 120000 });
     const err = await page.evaluate(() => window.READY_ERROR);
     if (err) throw new Error(err);

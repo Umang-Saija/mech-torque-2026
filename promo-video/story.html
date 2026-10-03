@@ -167,7 +167,8 @@
 const qs = new URLSearchParams(location.search);
 const W = +qs.get('w') || 1080, H = +qs.get('h') || 1920;
 const ASP = W / H, TALL = ASP < .7;
-const PEOPLE = qs.get('people') !== '0';   // people=0: product-only plates for compositing with live-action footage
+const PEOPLE = qs.get('people') !== '0';
+if (qs.get('clean') === '1') document.head.insertAdjacentHTML('beforeend', '<style>#copy,#hud,#dialWrap,#callout,#lines,#letter,#scrim,#glintWrap,#flash{display:none!important}</style>');   // people=0: product-only plates for compositing with live-action footage
 const stage = document.getElementById('stage');
 stage.style.width = W + 'px'; stage.style.height = H + 'px';
 const $ = id => document.getElementById(id);
