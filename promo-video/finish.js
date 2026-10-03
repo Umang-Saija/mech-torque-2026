@@ -19,7 +19,8 @@ const vo = voArg ? path.resolve(voArg) : (comp === 'story' && fs.existsSync(path
 const VOCHAIN = 'highpass=f=85,lowpass=f=10500,equalizer=f=180:t=q:w=1:g=2.5,equalizer=f=3200:t=q:w=1.2:g=-2.5,deesser=i=0.35,acompressor=threshold=-22dB:ratio=2.5:attack=12:release=220:makeup=2,aecho=0.8:0.55:28|41:0.10|0.07';
 const name = f => path.join(OUT, `MechTorque-${comp === 'story' ? 'Story' : 'Product'}-${f}.mp4`);
 
-for (const f of ['9x16', '4x5']) {
+const only = process.argv[4];   // optional: just one format, e.g. 4x5
+for (const f of ['9x16', '4x5'].filter(x => !only || x === only)) {
     // a picture rendered in parallel chunks (story-9x16-a.mp4, -b, -c1 ...) is joined first
     const chunks = fs.readdirSync(OUT).filter(n => n.startsWith(`${comp}-${f}-`) && n.endsWith('.mp4')).sort();
     if (!fs.existsSync(pic(f)) && chunks.length) {
