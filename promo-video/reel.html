@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mech Torque | The Quarter Turn</title>
+<link rel="stylesheet" href="vendor/fonts/fonts.css">
+<style>
+    :root {
+        --bg: #04070e;
+        --navy: #0a1426;
+        --ink: #eef3f8;
+        --ink-soft: #8fa3b8;
+        --signal: #00f0ff;
+        --signal-soft: #38bdf8;
+        --red: #e80d0d;
+        --yellow: #efc400;
+        --valve: #0868f5;
+        --head: 'Space Grotesk', sans-serif;
+        --mono: 'JetBrains Mono', monospace;
+        --cond: 'Barlow Condensed', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: #000; overflow: hidden; }
+    #stage { position: relative; overflow: hidden; background: var(--bg); color: var(--ink); font-family: var(--head); }
+    #stage > * { position: absolute; inset: 0; }
+    canvas { display: block; }
+    svg.layer { width: 100%; height: 100%; overflow: visible; }
+    #gl { visibility: hidden; position: absolute; left: 0; top: 0; }
+    .layer { pointer-events: none; }
+
+    /* word-by-word masked reveal */
+    .k { position: absolute; left: 72px; right: 72px; line-height: 1.02; letter-spacing: -.02em; }
+    .k .w { display: inline-block; overflow: hidden; vertical-align: bottom; padding-bottom: .08em; margin-bottom: -.08em; }
+    .k .wi { display: inline-block; will-change: transform; }
+    .h1 { font-weight: 500; font-size: 92px; }
+    .h2 { font-weight: 400; font-size: 58px; color: var(--ink); }
+    .h3 { font-weight: 400; font-size: 44px; color: var(--ink-soft); letter-spacing: -.01em; }
+    .mono { font-family: var(--mono); font-size: 25px; letter-spacing: .14em; text-transform: uppercase; color: var(--signal-soft); }
+    .accent { color: var(--signal); }
+    .center { text-align: center; }
+
+    /* hook */
+    #hook { background: var(--bg); }
+    #deg { position: absolute; font-family: var(--cond); font-weight: 600; font-size: 330px; line-height: .8; letter-spacing: -.02em; color: var(--ink); }
+    #deg sup { font-size: .42em; vertical-align: top; position: relative; top: .1em; color: var(--signal); font-weight: 500; }
+
+    /* HUD */
+    .corner { position: absolute; width: 46px; height: 46px; border-color: rgba(143, 163, 184, .45); border-style: solid; border-width: 0; }
+    #bug { position: absolute; left: 64px; top: 64px; display: flex; align-items: center; gap: 16px; font-family: var(--cond); font-weight: 700; font-size: 31px; letter-spacing: .2em; color: var(--ink); }
+    #bug svg { width: 40px; height: 40px; color: var(--signal); }
+    #hudR { position: absolute; right: 64px; top: 70px; text-align: right; font-family: var(--mono); font-size: 19px; letter-spacing: .14em; color: var(--ink-soft); line-height: 1.6; }
+
+    /* part callout */
+    #callout .lab { position: absolute; left: 72px; right: 72px; }
+    #pnum { font-family: var(--mono); font-size: 24px; letter-spacing: .2em; color: var(--signal); }
+    #pname { font-family: var(--cond); font-weight: 700; font-size: 104px; line-height: .95; letter-spacing: .01em; text-transform: uppercase; margin-top: 10px; }
+    #pspec { font-family: var(--mono); font-size: 25px; letter-spacing: .08em; color: var(--ink-soft); margin-top: 18px; line-height: 1.5; }
+    #pbar { height: 2px; background: rgba(143, 163, 184, .25); margin-top: 30px; position: relative; }
+    #pbar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--signal); }
+
+    /* turn dial */
+    #dial { position: absolute; left: 72px; right: 72px; }
+    #dialDeg { font-family: var(--cond); font-weight: 600; font-size: 200px; line-height: .8; }
+    #dialDeg sup { font-size: .4em; vertical-align: top; position: relative; top: .12em; color: var(--signal); }
+    #dialTrack { position: relative; height: 4px; background: rgba(143, 163, 184, .25); margin-top: 34px; }
+    #dialTrack i { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(90deg, var(--signal-soft), var(--signal)); box-shadow: 0 0 24px rgba(0, 240, 255, .6); }
+    #dialLabels { display: flex; justify-content: space-between; margin-top: 18px; font-family: var(--mono); font-size: 24px; letter-spacing: .2em; color: var(--ink-soft); }
+
+    /* range */
+    #range { background: rgba(4, 7, 14, .86); }
+    .row { position: absolute; left: 72px; right: 72px; height: 92px; display: grid; grid-template-columns: 170px 1fr 230px; align-items: center; gap: 26px; border-top: 1px solid rgba(143, 163, 184, .18); }
+    .row .m { font-family: var(--cond); font-weight: 700; font-size: 46px; letter-spacing: .04em; }
+    .row .b { position: relative; height: 10px; background: rgba(143, 163, 184, .12); }
+    .row .b i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--ink); }
+    .row .v { font-family: var(--cond); font-weight: 600; font-size: 52px; text-align: right; font-variant-numeric: tabular-nums; }
+    .row .v small { font-size: .5em; color: var(--ink-soft); margin-left: 6px; letter-spacing: .06em; }
+    .row.hero .m, .row.hero .v { color: var(--signal); }
+    .row.hero .b i { background: var(--signal); box-shadow: 0 0 22px rgba(0, 240, 255, .55); }
+
+    /* end */
+    #end { background: radial-gradient(120% 70% at 50% 42%, #0b1730 0%, #04070e 62%); }
+    #logo { position: absolute; left: 50%; width: 220px; height: 220px; margin-left: -110px; color: var(--signal); }
+    #word { position: absolute; left: 0; right: 0; text-align: center; font-family: var(--cond); font-weight: 800; font-size: 132px; letter-spacing: .14em; line-height: 1; }
+    #glint { position: absolute; height: 6px; left: -10%; right: -10%; mix-blend-mode: screen; filter: blur(3px); background: linear-gradient(90deg, transparent, rgba(160, 240, 255, .0) 20%, rgba(200, 248, 255, .9) 50%, rgba(160, 240, 255, 0) 80%, transparent); }
+    #flash { background: #dff9ff; mix-blend-mode: screen; opacity: 0; }
+</style>
+</head>
+<body>
+<div id="stage">
+    <canvas id="bg"></canvas>
+    <canvas id="view"></canvas>
+    <canvas id="gl"></canvas>
+
+    <!-- HUD that lives over the 3D -->
+    <div id="hud" class="layer">
+        <div class="corner" style="left:40px;top:40px;border-left-width:2px;border-top-width:2px"></div>
+        <div class="corner" style="right:40px;top:40px;border-right-width:2px;border-top-width:2px"></div>
+        <div class="corner" style="left:40px;bottom:40px;border-left-width:2px;border-bottom-width:2px"></div>
+        <div class="corner" style="right:40px;bottom:40px;border-right-width:2px;border-bottom-width:2px"></div>
+        <div id="bug"><svg viewBox="-10 -10 20 20" data-gear></svg>MECH TORQUE</div>
+        <div id="hudR"></div>
+    </div>
+
+    <svg id="lines" class="layer"><g id="leader">
+        <line id="ldLine" stroke="#00f0ff" stroke-width="2" />
+        <circle id="ldHalo" r="34" fill="none" stroke="rgba(0,240,255,.35)" stroke-width="2" />
+        <circle id="ldDot" r="9" fill="#00f0ff" />
+    </g></svg>
+
+    <div id="scrim" class="layer" style="background:linear-gradient(180deg,rgba(4,7,14,.92) 0%,rgba(4,7,14,.55) 22%,rgba(4,7,14,0) 34%)"></div>
+    <div id="copy" class="layer">
+        <div class="k mono" id="bpTag" data-y=".095">MT-30 · Worm gear operator · 700 Nm</div>
+        <div class="k h1" id="bp1" data-y=".125">It starts as a line.</div>
+        <div class="k h1" id="bp2" data-y=".125">Then it becomes <span class="accent">iron.</span></div>
+        <div class="k mono" id="anTag" data-y=".095">Anatomy of a quarter turn</div>
+        <div class="k mono" id="npTag" data-y=".095">MT-30 · Data plate</div>
+        <div class="k h1" id="np1" data-y=".125">Rated <span class="accent">700 Nm.</span></div>
+        <div class="k h3" id="np2" data-y=".205">ISO 5211 F07 · F10 · F12. Up to 32 mm drive bore.</div>
+        <div class="k h1" id="mt1" data-y=".11">Built for one job.</div>
+        <div class="k mono" id="mt2" data-y=".86">Bolts straight onto the valve top flange</div>
+        <div class="k h1" id="tn1" data-y=".11">Turn the wheel.</div>
+        <div class="k h1" id="tn2" data-y=".11">The line <span class="accent">opens.</span></div>
+        <div class="k h1" id="ho1" data-y=".11">Let go.</div>
+        <div class="k h1" id="ho2" data-y=".175">It <span class="accent">holds.</span></div>
+        <div class="k h3" id="ho3" data-y=".84">Self-locking worm drive. Holds any position without a brake.</div>
+    </div>
+
+    <div id="callout" class="layer">
+        <div class="lab" id="lab">
+            <div id="pnum"></div>
+            <div id="pname"></div>
+            <div id="pspec"></div>
+            <div id="pbar"><i></i></div>
+        </div>
+    </div>
+
+    <div id="dialWrap" class="layer">
+        <div id="dial">
+            <div id="dialDeg">0<sup>°</sup></div>
+            <div id="dialTrack"><i></i></div>
+            <div id="dialLabels"><span>CLOSE</span><span>OPEN</span></div>
+        </div>
+    </div>
+
+    <div id="glintWrap" class="layer"><div id="glint"></div></div>
+
+    <div id="range" class="layer">
+        <div class="k mono" id="rgTag" data-y=".095">The Mech Torque range</div>
+        <div class="k h1" id="rg1" data-y=".125">One family.</div>
+        <div class="k h1" id="rg2" data-y=".195"><span class="accent">250 → 2,000 Nm.</span></div>
+        <div id="rows"></div>
+        <div class="k h3" id="rg3" data-y=".80">Six models · ISO 5211 F05 to F16</div>
+        <div class="k mono" id="rg4" data-y=".855">Manufacturing · Oil &amp; Gas · Petrochemicals</div>
+    </div>
+
+    <div id="hook" class="layer">
+        <svg id="proto" style="position:absolute;inset:0;width:100%;height:100%"></svg>
+        <div id="deg">0<sup>°</sup></div>
+        <div class="k h2" id="hk1">Every plant. Every pipeline.</div>
+        <div class="k h2" id="hk2" style="color:var(--ink-soft)">It all comes down to</div>
+        <div class="k h1" id="hk3">a quarter turn.</div>
+    </div>
+    <svg id="wipeEdge" class="layer"><line id="weLine" stroke="#00f0ff" stroke-width="3" /></svg>
+
+    <div id="end" class="layer">
+        <svg id="logo" viewBox="-10.5 -10.5 21 21">
+            <path id="lgA" fill="none" stroke="currentColor" stroke-width=".9" stroke-linejoin="round" stroke-linecap="round" d="M6.35,0.82 L8.96,2.08 L7.81,4.87 L5.07,3.91 L3.91,5.07 L4.87,7.81 L2.08,8.96 L0.82,6.35 L-0.82,6.35 L-2.08,8.96 L-4.87,7.81 L-3.91,5.07 L-5.07,3.91 L-7.81,4.87 L-8.96,2.08 L-6.35,0.82 L-6.35,-0.82 L-8.96,-2.08 L-7.81,-4.87 L-5.07,-3.91 L-3.91,-5.07 L-4.87,-7.81 L-2.08,-8.96 L-0.82,-6.35 L0.82,-6.35 L2.08,-8.96 L4.87,-7.81 L3.91,-5.07 L5.07,-3.91 L7.81,-4.87 L8.96,-2.08 L6.35,-0.82 Z" />
+            <path id="lgB" fill="none" stroke="currentColor" stroke-width=".9" stroke-linecap="round" d="M2.6 -2.3A3.5 3.5 0 1 0 2.6 2.3" />
+        </svg>
+        <div id="word">MECH TORQUE</div>
+        <div class="k h2 center" id="en1" style="font-size:46px">Gearboxes that drive valve excellence.</div>
+        <div class="k mono center" id="en2">Engineered &amp; manufactured in Rajkot, India</div>
+        <div class="k h3 center" id="en3" style="color:var(--ink)">+91 99131 91343</div>
+        <div class="k mono center" id="en4" style="color:var(--ink-soft);letter-spacing:.08em;text-transform:none">infomechtorque@gmail.com</div>
+    </div>
+    <div id="flash" class="layer"></div>
+
+    <!-- elements model3d.js expects to find (kept hidden) -->
+    <div style="display:none">
+        <div id="pin"></div><div id="track"></div><ol id="rail"></ol>
+        <div id="copy-x"><h1 id="head"></h1><p id="lede"></p><span id="tag"></span></div>
+        <div id="specs"></div><a id="cta"></a>
+        <svg id="calloutSvg"><line id="calloutLine" /><circle id="calloutDot" /><circle id="calloutHalo" /><circle id="calloutRing" /></svg>
+        <div id="calloutLabel"><span id="calloutTag"></span></div>
+    </div>
+</div>
+
+<script src="vendor/three.min.js"></script>
+<script src="timeline.js"></script>
+<script>
+(async () => {
+'use strict';
+const qs = new URLSearchParams(location.search);
+const W = +qs.get('w') || 1080, H = +qs.get('h') || 1920;
+const ASP = W / H, TALL = ASP < .7;           // 9:16 vs 4:5
+const stage = document.getElementById('stage');
+stage.style.width = W + 'px'; stage.style.height = H + 'px';
+const $ = id => document.getElementById(id);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, t) => a + (b - a) * t;
+const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const easeOut = t => 1 - Math.pow(1 - t, 3);
+const easeOutExpo = t => t >= 1 ? 1 : 1 - Math.pow(2, -10 * t);
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+
+/* ------------------------------------------------------------------
+   1. Load the website's own model (model3d.js) unchanged in geometry.
+      Only three things are patched at load time:
+        - preserveDrawingBuffer so frames can be captured
+        - deltaAt() reads the disc opening from the video timeline
+        - instead of starting its scroll loop, it hands us its objects
+------------------------------------------------------------------- */
+const pin = $('pin'); pin.style.cssText = `width:${W}px;height:${H}px`;
+let src = await (await fetch('../model3d.js')).text();
+const patch = (a, b) => { if (!src.includes(a)) throw new Error('patch target missing: ' + a.slice(0, 40)); src = src.replace(a, b); };
+patch('alpha: true,', 'alpha: true, preserveDrawingBuffer: true,');
+patch('function deltaAt(p) {', 'function deltaAt(p) { if (window.__OPEN != null) return D0 + (Math.PI / 2) * window.__OPEN;');
+const lastTick = src.lastIndexOf('tick();');
+src = src.slice(0, lastTick) + `window.MT = { scene, camera, renderer, apply, root, housing, plate, gear, worm, coverG, coverBolts, stopBolts, nuts, indicator, nameplate, wheel, valve, discGroup, floor, M, key, fill, kick, drawPlate, drawCover };` + src.slice(lastTick + 7);
+pin.parentElement.style.display = 'block'; pin.parentElement.style.visibility = 'hidden'; pin.parentElement.style.position = 'absolute';
+(0, eval)(src);
+const MT = window.MT;
+if (!MT) throw new Error('model failed to initialise (WebGL?)');
+await document.fonts.ready;
+await Promise.all(['700 90px "Barlow Condensed"', '800 90px "Barlow Condensed"', '500 40px "Barlow"', '700 40px "Barlow"'].map(f => document.fonts.load(f)));
+MT.drawCover(); MT.drawPlate();
+await new Promise(r => setTimeout(r, 300)); MT.drawPlate();   // logo image decode
+
+const { scene, camera, renderer, root, valve } = MT;
+const gl = $('gl');
+renderer.setPixelRatio(1);
+renderer.setSize(W, H, false);
+gl.width = W; gl.height = H;
+camera.aspect = ASP; camera.updateProjectionMatrix();
+renderer.toneMappingExposure = 1.0;
+renderer.localClippingEnabled = true;
+MT.floor.visible = false;
+
+/* studio lighting for a dark set: the cast iron is near black, so it is
+   read by its rims. Two back rims (cool + warm) and a top kicker. */
+const rimCool = new THREE.DirectionalLight(0xbfe6ff, 1.7); rimCool.position.set(7, 6, -9); scene.add(rimCool);
+const rimWarm = new THREE.DirectionalLight(0xffe0bd, 1.25); rimWarm.position.set(-9, 4, -7); scene.add(rimWarm);
+const top = new THREE.DirectionalLight(0xffffff, .55); top.position.set(0, 12, 2); scene.add(top);
+const sweep = new THREE.PointLight(0xffffff, 0, 7, 1.6); scene.add(sweep);
+MT.key.intensity = 1.45;
+
+/* ------------------------------------------------------------------
+   2. Blueprint layer: edge lines on every part, and a clipping plane
+      that turns drawing into metal as a laser sheet passes.
+------------------------------------------------------------------- */
+const solidPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 1e4);   // keep y > Y
+const edgePlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), -1e4);  // keep y < Y
+const edgeMat = new THREE.LineBasicMaterial({ color: 0x3fd9ff, transparent: true, opacity: .8, blending: THREE.AdditiveBlending, depthWrite: false, clippingPlanes: [edgePlane] });
+const edges = [];
+const mats = new Set();
+[root, valve].forEach(g => g.traverse(o => {
+    if (!o.isMesh) return;
+    (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => mats.add(m));
+    const m0 = Array.isArray(o.material) ? o.material[0] : o.material;
+    if (m0.transparent) return;
+    const thr = o.geometry.type === 'TubeGeometry' ? 40 : 28;
+    const e = new THREE.LineSegments(new THREE.EdgesGeometry(o.geometry, thr), edgeMat);
+    e.renderOrder = 2; o.add(e); edges.push(e);
+}));
+mats.forEach(m => { m.clippingPlanes = [solidPlane]; m.clipShadows = true; m.needsUpdate = true; });
+const sheetTex = (() => {
+    const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d');
+    const gr = g.createRadialGradient(128, 128, 0, 128, 128, 128);
+    gr.addColorStop(0, 'rgba(120,240,255,.9)'); gr.addColorStop(.45, 'rgba(0,200,255,.35)'); gr.addColorStop(1, 'rgba(0,160,255,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, 256, 256);
+    return new THREE.CanvasTexture(c);
+})();
+const sheet = new THREE.Mesh(new THREE.PlaneGeometry(13, 13), new THREE.MeshBasicMaterial({ map: sheetTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, opacity: 0 }));
+sheet.rotation.x = -Math.PI / 2; scene.add(sheet);
+function setScan(Y, on) {
+    solidPlane.constant = -Y; edgePlane.constant = Y;
+    edges.forEach(e => e.visible = on);
+}
+
+/* ------------------------------------------------------------------
+   3. Product state from time. Everything goes through the website's
+      own apply(p), so assembly paths and kinematics are identical.
+------------------------------------------------------------------- */
+const QSEG = [[.04, .15], [.15, .25], [.25, .36], [.36, .47], [.47, .66], [.67, .775], [.775, .815]];
+function qAt(t) {
+    if (t < TL.assembly[0]) return 0;
+    let q = QSEG[0][0];
+    TL.partTimes.forEach((ti, i) => { if (t >= ti) q = lerp(QSEG[i][0], QSEG[i][1], clamp((t - ti) / TL.partMove)); });
+    if (t >= TL.nameplate[0]) q = lerp(.815, .845, clamp((t - TL.nameplate[0]) / .8));
+    return q;
+}
+function pAt(t) {
+    if (t < TL.mount[0]) return qAt(t) * .55;
+    if (t < TL.wheelIn[0]) return .465;
+    if (t < TL.tilt[0]) return lerp(.50, .58, prog(t, TL.wheelIn[0], TL.wheelIn[1]));
+    return lerp(.60, .70, prog(t, TL.tilt[0], TL.tilt[1])) + (t > TL.tilt[1] ? .05 : 0);
+}
+function openAt(t) { return ease(prog(t, TL.open[0], TL.open[1])); }
+function setProduct(t) {
+    window.__OPEN = openAt(t);
+    MT.apply(pAt(t));
+}
+
+/* ------------------------------------------------------------------
+   4. Camera rig: keyframed orbit (azimuth, elevation, distance, target,
+      vertical frame offset) with Catmull-Rom smoothing inside each shot.
+------------------------------------------------------------------- */
+const D = TALL ? 1 : .93;  // 4:5 frames a touch tighter
+const SHOTS = [
+    { from: 0, to: TL.nameplate[0] - .001, keys: [
+        [3.5, -1.10, .40, 46, -1.1, .3, 1.3, .0],
+        [6.0, -1.00, .36, 44, -1.0, .3, 1.3, .0],
+        [8.4, -.90, .32, 42, -.9, .3, 1.2, .0],
+        [11.0, -.80, .30, 38, -.8, .25, 1.0, .0],
+        [13.6, -.70, .27, 32, -1.0, .15, .5, .0],
+        [16.4, -.55, .25, 26, -.6, .0, .45, .0],
+        [19.2, -.40, .22, 21, -.3, -.15, .45, .0],
+        [22.0, -.26, .17, 19, -.1, -.35, .5, .0],
+        [23.6, -.16, .12, 14, 0, -.9, .6, .02]] },
+    { from: TL.nameplate[0], to: TL.mount[0] - .001, keys: [
+        [23.6, -.16, .12, 14, 0, -.9, .6, .02],
+        [24.6, -.10, .05, 7.4, 0, -2.05, .74, -.08],
+        [25.8, -.03, .03, 6.8, 0, -2.1, .74, -.1],
+        [27.0, .08, .02, 6.4, 0, -2.12, .74, -.1]] },
+    { from: TL.mount[0], to: TL.turn[0] - .001, keys: [
+        [27.0, -.95, .20, 21, -1.4, -.4, .2, .04],
+        [28.6, -.78, .22, 23, -1.1, -1.0, .2, .03],
+        [30.2, -.62, .30, 28, -.85, -1.9, .2, .0],
+        [31.0, -.58, .32, 29, -.85, -2.0, .2, .0]] },
+    { from: TL.turn[0], to: TL.range[0] - .001, keys: [
+        [31.0, -.58, .32, 29, -.85, -2.0, .2, .0],
+        [33.0, -.36, .38, 26.5, -.8, -2.2, .3, .0],
+        [35.4, -.14, .32, 25, -.7, -2.3, .3, .0],
+        [38.0, .04, .30, 24.5, -.7, -2.3, .3, .0]] },
+    { from: TL.range[0], to: 99, keys: [
+        [38.0, .04, .30, 24.5, -.7, -2.3, .3, .0],
+        [43.2, .55, .22, 26, -.75, -2.3, .2, .0],
+        [48.0, .85, .18, 27, -.75, -2.3, .2, .0]] }
+];
+function cr(p0, p1, p2, p3, t) {
+    const t2 = t * t, t3 = t2 * t;
+    return .5 * ((2 * p1) + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (-p0 + 3 * p1 - 3 * p2 + p3) * t3);
+}
+function camAt(t) {
+    const s = SHOTS.find(s => t >= s.from && t <= s.to) || SHOTS[SHOTS.length - 1];
+    const K = s.keys;
+    if (t <= K[0][0]) return K[0].slice(1);
+    if (t >= K[K.length - 1][0]) return K[K.length - 1].slice(1);
+    let i = 0; while (t > K[i + 1][0]) i++;
+    const u = (t - K[i][0]) / (K[i + 1][0] - K[i][0]);
+    const k0 = K[Math.max(0, i - 1)], k1 = K[i], k2 = K[i + 1], k3 = K[Math.min(K.length - 1, i + 2)];
+    return k1.slice(1).map((_, j) => cr(k0[j + 1], k1[j + 1], k2[j + 1], k3[j + 1], u));
+}
+function setCamera(t) {
+    const [az, el, d0, tx, ty, tz, sy] = camAt(t);
+    const d = d0 * D;
+    camera.position.set(tx + d * Math.sin(az) * Math.cos(el), ty + d * Math.sin(el), tz + d * Math.cos(az) * Math.cos(el));
+    camera.lookAt(tx, ty, tz);
+    camera.setViewOffset(W, H, 0, H * sy, W, H);
+    return { az, el, d };
+}
+
+/* ------------------------------------------------------------------
+   5. Lighting + scan state per time
+------------------------------------------------------------------- */
+function setLook(t) {
+    // blueprint until the scan passes, then metal
+    if (t < TL.scan[0] + .4) setScan(60, true);
+    else if (t < TL.scan[1]) {
+        const u = ease(prog(t, TL.scan[0] + .4, TL.scan[1]));
+        setScan(lerp(3.4, -3.2, u), true);
+    } else setScan(-1e3, false);
+    const sOn = t > TL.scan[0] + .3 && t < TL.scan[1] + .15;
+    sheet.material.opacity = sOn ? .55 * Math.sin(Math.PI * prog(t, TL.scan[0] + .3, TL.scan[1] + .15)) + .25 : 0;
+    sheet.position.y = -solidPlane.constant;
+    sheet.visible = sOn;
+
+    // glint across the nameplate
+    const g = prog(t, 25.0, 26.6);
+    sweep.intensity = g > 0 && g < 1 ? 2.4 * Math.sin(Math.PI * g) : 0;
+    sweep.position.set(lerp(-1.6, 1.6, g), -1.8, 1.9);
+
+    // exposure breathes down under the range/end cards
+    renderer.toneMappingExposure = .9 - .22 * prog(t, TL.range[0], TL.range[0] + 1);
+}
+
+/* ------------------------------------------------------------------
+   6. 2D background: deep navy, a soft key pool behind the product,
+      a blueprint grid that only exists while it is a drawing.
+------------------------------------------------------------------- */
+const bg = $('bg'); bg.width = W; bg.height = H; const bx = bg.getContext('2d');
+const view = $('view'); view.width = W; view.height = H; const vx = view.getContext('2d');
+function drawBg(t) {
+    bx.fillStyle = '#04070e'; bx.fillRect(0, 0, W, H);
+    const cy = H * .46;
+    const glow = bx.createRadialGradient(W * .5, cy, 0, W * .5, cy, H * .55);
+    const warm = prog(t, TL.scan[0], TL.scan[1]);
+    glow.addColorStop(0, `rgba(${Math.round(lerp(12, 34, warm))},${Math.round(lerp(40, 48, warm))},${Math.round(lerp(78, 66, warm))},1)`);
+    glow.addColorStop(.55, 'rgba(10,20,38,.55)'); glow.addColorStop(1, 'rgba(4,7,14,0)');
+    bx.fillStyle = glow; bx.fillRect(0, 0, W, H);
+    const gridA = (1 - prog(t, TL.scan[0] + .6, TL.scan[1] + .4)) * prog(t, 3.8, 4.6);
+    if (gridA > 0) {
+        const s = 54, off = (t * 6) % s;
+        bx.lineWidth = 1;
+        for (let x = -s; x < W + s; x += s) { bx.strokeStyle = `rgba(63,217,255,${(x / s) % 5 === 0 ? .14 * gridA : .06 * gridA})`; bx.beginPath(); bx.moveTo(x + .5, 0); bx.lineTo(x + .5, H); bx.stroke(); }
+        for (let y = -s; y < H + s; y += s) { bx.strokeStyle = `rgba(63,217,255,${.06 * gridA})`; bx.beginPath(); bx.moveTo(0, y + off + .5); bx.lineTo(W, y + off + .5); bx.stroke(); }
+    }
+    // floor pool once the product is metal
+    const fl = prog(t, TL.scan[1] - .5, TL.scan[1] + .5);
+    if (fl > 0) {
+        const f = bx.createRadialGradient(W * .5, H * .72, 0, W * .5, H * .72, W * .7);
+        f.addColorStop(0, `rgba(40,60,90,${.22 * fl})`); f.addColorStop(1, 'rgba(4,7,14,0)');
+        bx.fillStyle = f; bx.fillRect(0, 0, W, H);
+    }
+}
+
+/* ------------------------------------------------------------------
+   7. Typography
+------------------------------------------------------------------- */
+document.querySelectorAll('[data-gear]').forEach(el => el.innerHTML = '<path d="' + $('lgA').getAttribute('d') + '" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M2.6 -2.3A3.5 3.5 0 1 0 2.6 2.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>');
+function splitWords(el) {
+    const walk = node => {
+        [...node.childNodes].forEach(n => {
+            if (n.nodeType === 3) {
+                const frag = document.createDocumentFragment();
+                n.textContent.split(/(\s+)/).forEach(w => {
+                    if (!w) return;
+                    if (/^\s+$/.test(w)) { frag.appendChild(document.createTextNode(' ')); return; }
+                    const o = document.createElement('span'); o.className = 'w';
+                    const i = document.createElement('span'); i.className = 'wi'; i.textContent = w;
+                    o.appendChild(i); frag.appendChild(o);
+                });
+                n.replaceWith(frag);
+            } else walk(n);
+        });
+    };
+    walk(el);
+    el._w = [...el.querySelectorAll('.wi')];
+}
+document.querySelectorAll('.k').forEach(el => {
+    splitWords(el);
+    if (el.dataset.y) el.style.top = (parseFloat(el.dataset.y) * H) + 'px';
+});
+/* reveal: words rise out of a mask, staggered; exit: whole line fades up */
+function reveal(id, t, tIn, tOut, stagger = .07, dur = .55) {
+    const el = $(id);
+    const out = tOut == null ? 0 : ease(prog(t, tOut, tOut + .35));
+    if (t < tIn - .01 || out >= 1) { el.style.visibility = 'hidden'; return; }
+    el.style.visibility = 'visible';
+    el._w.forEach((w, i) => {
+        const u = easeOutExpo(prog(t, tIn + i * stagger, tIn + i * stagger + dur));
+        w.style.transform = `translateY(${(1 - u) * 110}%)`;
+    });
+    el.style.opacity = 1 - out;
+    el.style.transform = `translateY(${-out * 24}px)`;
+}
+
+/* hook: protractor */
+const PX = W * .14, PY = H * (TALL ? .43 : .50), PR = W * (TALL ? .62 : .5);
+const proto = $('proto');
+(() => {
+    let s = '';
+    for (let a = 0; a <= 90; a += 2.5) {
+        const r = a * Math.PI / 180, long = a % 15 === 0, l = long ? 40 : 18;
+        s += `<line class="tk" data-a="${a}" x1="${PX + Math.cos(r) * PR}" y1="${PY - Math.sin(r) * PR}" x2="${PX + Math.cos(r) * (PR - l)}" y2="${PY - Math.sin(r) * (PR - l)}" stroke="${long ? '#eef3f8' : '#8fa3b8'}" stroke-width="${long ? 3 : 2}"/>`;
+        if (a % 15 === 0) s += `<text class="tk" data-a="${a}" x="${PX + Math.cos(r) * (PR - 78)}" y="${PY - Math.sin(r) * (PR - 78) + 9}" fill="#8fa3b8" font-family="JetBrains Mono" font-size="22" text-anchor="middle">${a}</text>`;
+    }
+    s += `<path id="arc" fill="none" stroke="#00f0ff" stroke-width="4"/>`;
+    s += `<line id="base" x1="${PX}" y1="${PY}" stroke="rgba(143,163,184,.5)" stroke-width="2"/>`;
+    s += `<line id="needle" x1="${PX}" y1="${PY}" stroke="#00f0ff" stroke-width="4" stroke-linecap="round"/>`;
+    s += `<circle cx="${PX}" cy="${PY}" r="12" fill="#04070e" stroke="#00f0ff" stroke-width="4"/>`;
+    proto.innerHTML = s;
+})();
+const deg = $('deg'); deg.style.left = (PX - 14) + 'px'; deg.style.top = (PY + 40) + 'px';
+['hk1', 'hk2', 'hk3'].forEach((id, i) => $(id).style.top = (PY + 340 + i * (TALL ? 82 : 70) + (i === 2 ? 10 : 0)) + 'px');
+const tks = [...proto.querySelectorAll('.tk')];
+function hookAt(t) {
+    const hook = $('hook');
+    const sweepA = ease(prog(t, .5, 2.9)) * 90;
+    tks.forEach(el => { el.style.opacity = clamp((sweepA + 6 - +el.dataset.a) / 6) * .9 + .1 * prog(t, 0, .5); });
+    const r = sweepA * Math.PI / 180;
+    $('needle').setAttribute('x2', PX + Math.cos(r) * (PR - 50)); $('needle').setAttribute('y2', PY - Math.sin(r) * (PR - 50));
+    $('base').setAttribute('x2', PX + PR * ease(prog(t, 0, .6)));
+    const ar = PR - 50;
+    $('arc').setAttribute('d', sweepA > .01 ? `M${PX + ar} ${PY} A${ar} ${ar} 0 0 0 ${PX + Math.cos(r) * ar} ${PY - Math.sin(r) * ar}` : '');
+    const shown = Math.round(sweepA);
+    deg.innerHTML = shown + '<sup>°</sup>';
+    deg.style.color = shown === 90 ? '#00f0ff' : '#eef3f8';
+    reveal('hk1', t, .35); reveal('hk2', t, 1.25); reveal('hk3', t, 2.85, null, .09);
+    // quarter-turn wipe: the needle keeps turning and takes the frame with it
+    const w = ease(prog(t, TL.wipe1[0], TL.wipe1[1]));
+    if (t > TL.wipe1[1]) { hook.style.display = 'none'; } else {
+        hook.style.display = 'block';
+        const A = w * 360;
+        hook.style.webkitMaskImage = hook.style.maskImage = w > 0 ? `conic-gradient(from 0deg at ${PX}px ${PY}px, transparent 0deg ${A}deg, #000 ${A}deg 360deg)` : 'none';
+    }
+    const we = $('weLine');
+    if (w > 0 && w < 1) {
+        const a = (w * 360 - 90) * Math.PI / 180;
+        we.setAttribute('x1', PX); we.setAttribute('y1', PY);
+        we.setAttribute('x2', PX + Math.cos(a) * H * 1.5); we.setAttribute('y2', PY + Math.sin(a) * H * 1.5);
+        we.style.opacity = Math.sin(Math.PI * w);
+    } else we.style.opacity = 0;
+}
+
+/* part callouts */
+const PARTS = [
+    { obj: () => MT.housing, n: '01', name: 'Housing', spec: 'Cast iron · IS 210 FG 200<br>ASTM A48 30A' },
+    { obj: () => MT.plate, n: '02', name: 'Mounting flange', spec: 'ISO 5211 · F07 / F10 / F12' },
+    { obj: () => MT.gear, n: '03', name: 'Worm wheel', spec: 'Ductile iron · SGI 500/7<br>Drives the valve stem directly' },
+    { obj: () => MT.worm, n: '04', name: 'Worm shaft', spec: 'Carbon steel · 45C8<br>A576-1045' },
+    { obj: () => MT.coverG, n: '05', name: 'Top cover', spec: 'Cast iron · IS 210 FG 200<br>4 × hex bolts seal the chamber' },
+    { obj: () => MT.stopBolts[0], n: '06', name: 'Travel stops', spec: 'Adjustable open / close limits<br>Lock nuts hold the setting' },
+    { obj: () => MT.indicator, n: '07', name: 'Position indicator', spec: 'Reads CLOSE → OPEN against<br>marks cast into the cover' }
+];
+const LAB_Y = H * (TALL ? .70 : .665);
+$('lab').style.top = LAB_Y + 'px';
+const box3 = new THREE.Box3(), v3 = new THREE.Vector3();
+function partAt(t) {
+    let idx = -1;
+    TL.partTimes.forEach((ti, i) => { if (t >= ti + .25) idx = i; });
+    const lastOut = TL.partTimes[6] + TL.partStep - .1;
+    const lab = $('lab'), leader = $('leader');
+    if (idx < 0 || t > lastOut + .3) { lab.style.opacity = 0; leader.style.opacity = 0; return; }
+    const P = PARTS[idx], ts = TL.partTimes[idx] + .25;
+    const local = t - ts, stepLen = TL.partStep;
+    const inU = easeOutExpo(prog(local, 0, .5));
+    const outU = idx === 6 ? ease(prog(t, lastOut, lastOut + .3)) : ease(prog(local, stepLen - .22, stepLen));
+    $('pnum').textContent = `${P.n} / 07`;
+    if ($('pname').dataset.i !== P.n) { $('pname').textContent = P.name; $('pspec').innerHTML = P.spec; $('pname').dataset.i = P.n; }
+    lab.style.opacity = inU * (1 - outU);
+    lab.style.transform = `translateY(${(1 - inU) * 40}px)`;
+    $('pbar').firstElementChild.style.width = (((idx) + prog(local, 0, stepLen)) / 7 * 100) + '%';
+    // leader from label to the part
+    box3.setFromObject(P.obj()); box3.getCenter(v3); v3.project(camera);
+    const x = (v3.x * .5 + .5) * W, y = (1 - (v3.y * .5 + .5)) * H;
+    const lx = 72 + 6, ly = LAB_Y - 26;
+    const draw = easeOut(prog(local, .1, .55));
+    $('ldLine').setAttribute('x1', lx); $('ldLine').setAttribute('y1', ly);
+    $('ldLine').setAttribute('x2', lerp(lx, x, draw)); $('ldLine').setAttribute('y2', lerp(ly, y, draw));
+    ['ldDot', 'ldHalo'].forEach(k => { $(k).setAttribute('cx', x); $(k).setAttribute('cy', y); });
+    $('ldHalo').setAttribute('r', 20 + 26 * ((local * 1.2) % 1));
+    $('ldHalo').style.opacity = 1 - ((local * 1.2) % 1);
+    $('ldDot').style.opacity = draw;
+    leader.style.opacity = (1 - outU) * prog(local, .05, .2);
+}
+
+/* range rows */
+const RANGE = [['MT-20', 250], ['MT-25', 500], ['MT-30', 700], ['MT-40', 1000], ['MT-50', 1500], ['MT-60', 2000]];
+const ROW0 = H * (TALL ? .33 : .30), ROWH = TALL ? 112 : 98;
+$('rows').innerHTML = RANGE.map(([m], i) => `<div class="row${m === 'MT-30' ? ' hero' : ''}" style="top:${ROW0 + i * ROWH}px"><span class="m">${m}</span><span class="b"><i></i></span><span class="v"><b>0</b><small>Nm</small></span></div>`).join('');
+const rows = [...document.querySelectorAll('.row')];
+function rangeAt(t) {
+    const r = $('range');
+    const w = ease(prog(t, TL.wipe2[0], TL.wipe2[1]));
+    if (w <= 0 || t > TL.end[0] + .6) { r.style.display = 'none'; return; }
+    r.style.display = 'block';
+    const cx = W * .5, cy = H * .5;
+    r.style.webkitMaskImage = r.style.maskImage = w < 1 ? `conic-gradient(from 0deg at ${cx}px ${cy}px, #000 0deg ${w * 360}deg, transparent ${w * 360}deg 360deg)` : 'none';
+    const fade = 1 - ease(prog(t, TL.end[0], TL.end[0] + .5));
+    r.style.opacity = fade;
+    reveal('rgTag', t, 38.5); reveal('rg1', t, 38.6); reveal('rg2', t, 38.95);
+    rows.forEach((row, i) => {
+        const a = 39.3 + i * .22, u = easeOutExpo(prog(t, a, a + 1.1));
+        row.style.opacity = prog(t, a - .05, a + .25);
+        row.querySelector('i').style.width = (RANGE[i][1] / 2000 * 100 * u) + '%';
+        row.querySelector('b').textContent = Math.round(RANGE[i][1] * u).toLocaleString('en-US');
+    });
+    reveal('rg3', t, 41.0); reveal('rg4', t, 41.35);
+}
+
+/* end card */
+const lgA = $('lgA'), lgB = $('lgB');
+const LA = lgA.getTotalLength(), LB = lgB.getTotalLength();
+lgA.style.strokeDasharray = LA; lgB.style.strokeDasharray = LB;
+const LOGO_Y = H * (TALL ? .30 : .22);
+$('logo').style.top = LOGO_Y + 'px';
+$('word').style.top = (LOGO_Y + 270) + 'px';
+[['en1', 430], ['en2', 520], ['en3', 640], ['en4', 702]].forEach(([id, dy]) => $(id).style.top = (LOGO_Y + dy) + 'px');
+function endAt(t) {
+    const e = $('end');
+    const a = prog(t, TL.end[0], TL.end[0] + .6);
+    if (a <= 0) { e.style.display = 'none'; return; }
+    e.style.display = 'block'; e.style.opacity = a;
+    const d1 = ease(prog(t, 43.5, 44.9)), d2 = ease(prog(t, 44.5, 45.2));
+    lgA.style.strokeDashoffset = LA * (1 - d1); lgB.style.strokeDashoffset = LB * (1 - d2);
+    $('logo').style.transform = `rotate(${(1 - d1) * -90}deg)`;   // the mark itself makes a quarter turn
+    const wu = easeOutExpo(prog(t, 44.7, 46.0));
+    $('word').style.opacity = wu; $('word').style.letterSpacing = lerp(.42, .14, wu) + 'em';
+    reveal('en1', t, 45.4); reveal('en2', t, 45.9); reveal('en3', t, 46.3); reveal('en4', t, 46.5);
+}
+
+/* turn dial */
+const DIAL_Y = H * (TALL ? .79 : .74);
+$('dial').style.top = DIAL_Y + 'px';
+function dialAt(t) {
+    const d = $('dialWrap');
+    const a = prog(t, 31.8, 32.2) * (1 - prog(t, 35.6, 35.9));
+    d.style.opacity = a; d.style.display = a > 0 ? 'block' : 'none';
+    const o = openAt(t);
+    $('dialDeg').innerHTML = Math.round(o * 90) + '<sup>°</sup>';
+    $('dialDeg').style.color = o > .999 ? '#00f0ff' : '#eef3f8';
+    $('dialTrack').firstElementChild.style.width = (o * 100) + '%';
+}
+
+/* HUD */
+function hudAt(t, cam) {
+    const a = prog(t, 4.3, 4.9) * (1 - prog(t, TL.end[0], TL.end[0] + .4));
+    $('hud').style.opacity = a;
+    const stage = t < TL.scan[1] ? 'DWG' : t < TL.nameplate[0] ? 'ASSY' : t < TL.turn[0] ? 'MOUNT' : t < TL.range[0] ? 'DRIVE' : 'RANGE';
+    $('hudR').innerHTML = `MT-30 · ${stage}<br>AZ ${((cam.az * 180 / Math.PI + 360) % 360).toFixed(1).padStart(5, '0')}°  EL ${(cam.el * 180 / Math.PI).toFixed(1)}°`;
+}
+
+function copyAt(t) {
+    $('scrim').style.opacity = prog(t, TL.scan[1] - .5, TL.scan[1] + .5) * (1 - prog(t, TL.range[0], TL.range[0] + .5));
+    reveal('bpTag', t, 4.6, 10.7); reveal('bp1', t, 4.8, 8.2);
+    reveal('bp2', t, 8.7, 10.7);
+    reveal('anTag', t, 11.2, 23.3);
+    reveal('npTag', t, 24.3, 26.7); reveal('np1', t, 24.5, 26.7); reveal('np2', t, 25.0, 26.7, .04);
+    reveal('mt1', t, 27.5, 30.8); reveal('mt2', t, 30.25, 30.9, .03);
+    reveal('tn1', t, 31.2, 33.6); reveal('tn2', t, 34.0, 35.5);
+    reveal('ho1', t, 35.75, 37.6); reveal('ho2', t, 36.35, 37.6); reveal('ho3', t, 36.9, 37.6, .03);
+    // anamorphic glint riding the nameplate sweep
+    const g = prog(t, 25.0, 26.6), gl = $('glint');
+    gl.style.top = (H * (TALL ? .555 : .58)) + 'px';
+    gl.style.opacity = g > 0 && g < 1 ? Math.sin(Math.PI * g) * .8 : 0;
+    gl.style.transform = `translateX(${lerp(-40, 40, g)}%) scaleY(${1 + Math.sin(Math.PI * g)})`;
+    // impact flash when the gearbox seats on the valve
+    $('flash').style.opacity = .22 * Math.exp(-Math.max(0, t - TL.tilt[1]) * 9) * (t >= TL.tilt[1] ? 1 : 0);
+}
+
+/* ------------------------------------------------------------------
+   8. Frame render. Fast moves are motion-blurred by averaging
+      sub-frames across a 180-degree shutter.
+------------------------------------------------------------------- */
+function samplesAt(t) {
+    if (t > TL.open[0] - .1 && t < TL.open[1] + .1) return 6;
+    if (t > TL.wheelIn[0] && t < TL.tilt[1] + .1) return 4;
+    if (TL.partTimes.some(ti => t > ti && t < ti + TL.partMove + .05)) return 3;
+    return 1;
+}
+let lastCam = { az: 0, el: 0 };
+window.renderAt = async (t) => {
+    drawBg(t);
+    vx.clearRect(0, 0, W, H);
+    const show3d = t > TL.wipe1[0] - .05 && t < TL.end[0] + .7;
+    if (show3d) {
+        const n = samplesAt(t), shutter = .5 / TL.FPS;
+        for (let i = 0; i < n; i++) {
+            const ts = n === 1 ? t : t - shutter / 2 + shutter * (i / (n - 1));
+            setProduct(ts); setLook(ts); lastCam = setCamera(ts);
+            renderer.render(scene, camera);
+            vx.globalAlpha = 1 / (i + 1);
+            vx.drawImage(gl, 0, 0);
+        }
+        vx.globalAlpha = 1;
+        setProduct(t); setLook(t); lastCam = setCamera(t);
+    }
+    hookAt(t); copyAt(t); partAt(t); dialAt(t); rangeAt(t); endAt(t); hudAt(t, lastCam);
+    await new Promise(r => requestAnimationFrame(() => r()));
+    return true;
+};
+window.READY = true;
+})().catch(e => { window.READY_ERROR = String(e && e.stack || e); console.error(e); });
+</script>
+</body>
+</html>

@@ -1,0 +1,948 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mech Torque | Same Valve, No Fight</title>
+<link rel="stylesheet" href="vendor/fonts/fonts.css">
+<style>
+    :root {
+        --bg: #04070e; --ink: #eef3f8; --ink-soft: #8fa3b8; --signal: #00f0ff; --signal-soft: #38bdf8;
+        --head: 'Space Grotesk', sans-serif; --mono: 'JetBrains Mono', monospace; --cond: 'Barlow Condensed', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: #000; overflow: hidden; }
+    #stage { position: relative; overflow: hidden; background: var(--bg); color: var(--ink); font-family: var(--head); }
+    #stage > * { position: absolute; inset: 0; }
+    canvas { display: block; }
+    svg.layer { width: 100%; height: 100%; overflow: visible; }
+    #gl { visibility: hidden; position: absolute; left: 0; top: 0; }
+    .layer { pointer-events: none; }
+    .k { position: absolute; left: 72px; right: 72px; line-height: 1.04; letter-spacing: -.02em; text-shadow: 0 2px 30px rgba(0, 0, 0, .55); }
+    .k .w { display: inline-block; overflow: hidden; vertical-align: bottom; padding-bottom: .1em; margin-bottom: -.1em; }
+    .k .wi { display: inline-block; }
+    .h1 { font-weight: 500; font-size: 92px; }
+    .h2 { font-weight: 400; font-size: 58px; }
+    .h3 { font-weight: 400; font-size: 42px; color: #c3cfdb; letter-spacing: -.01em; }
+    .mono { font-family: var(--mono); font-size: 25px; letter-spacing: .14em; text-transform: uppercase; color: var(--signal-soft); }
+    .accent { color: var(--signal); }
+    .warm { color: #ffb36b; }
+    .center { text-align: center; }
+    .corner { position: absolute; width: 46px; height: 46px; border-color: rgba(143, 163, 184, .45); border-style: solid; border-width: 0; }
+    #bug { position: absolute; left: 64px; top: 64px; display: flex; align-items: center; gap: 16px; font-family: var(--cond); font-weight: 700; font-size: 31px; letter-spacing: .2em; }
+    #bug svg { width: 40px; height: 40px; color: var(--signal); }
+    #hudR { position: absolute; right: 64px; top: 70px; text-align: right; font-family: var(--mono); font-size: 19px; letter-spacing: .14em; color: var(--ink-soft); line-height: 1.6; }
+    #stamp { position: absolute; left: 72px; font-family: var(--mono); font-size: 26px; letter-spacing: .18em; color: #ffb36b; }
+    #stamp b { font-family: var(--cond); font-weight: 600; font-size: 120px; letter-spacing: .02em; color: var(--ink); display: block; line-height: .9; margin-bottom: 8px; }
+    .lab { position: absolute; left: 72px; right: 72px; }
+    #pnum { font-family: var(--mono); font-size: 24px; letter-spacing: .2em; color: var(--signal); }
+    #pname { font-family: var(--cond); font-weight: 700; font-size: 104px; line-height: .95; text-transform: uppercase; margin-top: 10px; }
+    #pspec { font-family: var(--mono); font-size: 25px; letter-spacing: .08em; color: var(--ink-soft); margin-top: 18px; line-height: 1.5; }
+    #pbar { height: 2px; background: rgba(143, 163, 184, .25); margin-top: 30px; position: relative; }
+    #pbar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--signal); }
+    #dial { position: absolute; left: 72px; right: 72px; }
+    #dialDeg { font-family: var(--cond); font-weight: 600; font-size: 190px; line-height: .8; text-shadow: 0 4px 40px rgba(0, 0, 0, .6); }
+    #dialDeg sup { font-size: .4em; vertical-align: top; position: relative; top: .12em; color: var(--signal); }
+    #dialTrack { position: relative; height: 4px; background: rgba(238, 243, 248, .25); margin-top: 30px; }
+    #dialTrack i { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(90deg, var(--signal-soft), var(--signal)); box-shadow: 0 0 24px rgba(0, 240, 255, .6); }
+    #dialLabels { display: flex; justify-content: space-between; margin-top: 16px; font-family: var(--mono); font-size: 24px; letter-spacing: .2em; color: #c3cfdb; }
+
+    /* the call */
+    #freeze { position: absolute; left: 0; top: 0; transform-origin: 50% 45%; }
+    #phone { position: absolute; left: 50%; width: 640px; margin-left: -320px; padding: 54px 48px 50px; border-radius: 56px;
+        background: linear-gradient(160deg, rgba(30, 44, 66, .72), rgba(8, 14, 26, .82)); border: 1.5px solid rgba(190, 220, 255, .22);
+        box-shadow: 0 40px 120px rgba(0, 0, 0, .6), inset 0 1px 0 rgba(255, 255, 255, .12); text-align: center; }
+    #phTop { font-family: var(--mono); font-size: 22px; letter-spacing: .3em; color: var(--ink-soft); }
+    #phLogo { position: relative; width: 170px; height: 170px; margin: 40px auto 30px; }
+    #phLogo .ring { position: absolute; inset: 0; border-radius: 50%; border: 2px solid rgba(0, 240, 255, .5); }
+    #phLogo .disc { position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #13304a, #071423); border: 1.5px solid rgba(0, 240, 255, .45); display: grid; place-items: center; }
+    #phLogo svg { width: 96px; height: 96px; color: var(--signal); }
+    #phName { font-family: var(--cond); font-weight: 800; font-size: 74px; letter-spacing: .12em; }
+    #phNum { font-family: var(--mono); font-size: 28px; letter-spacing: .1em; color: #c3cfdb; margin-top: 8px; }
+    #phWave { height: 70px; margin: 34px auto 6px; display: flex; gap: 7px; align-items: center; justify-content: center; }
+    #phWave i { width: 7px; border-radius: 4px; background: var(--signal); display: block; }
+    #phStatus { font-family: var(--mono); font-size: 24px; letter-spacing: .2em; color: var(--signal); }
+
+    #end { background: radial-gradient(120% 70% at 50% 42%, #0b1730 0%, #04070e 62%); }
+    #logo { position: absolute; left: 50%; width: 220px; height: 220px; margin-left: -110px; color: var(--signal); }
+    #word { position: absolute; left: 0; right: 0; text-align: center; font-family: var(--cond); font-weight: 800; font-size: 132px; letter-spacing: .14em; line-height: 1; }
+    #glint { position: absolute; height: 6px; left: -10%; right: -10%; mix-blend-mode: screen; filter: blur(3px); background: linear-gradient(90deg, transparent, rgba(200, 248, 255, .9) 50%, transparent); }
+    #flash { mix-blend-mode: screen; opacity: 0; }
+    #letter { background: linear-gradient(180deg, #000 0, #000 var(--lb), transparent var(--lb), transparent calc(100% - var(--lb)), #000 calc(100% - var(--lb))); }
+</style>
+</head>
+<body>
+<div id="stage">
+    <canvas id="bg"></canvas>
+    <canvas id="view"></canvas>
+    <canvas id="freeze"></canvas>
+    <canvas id="gl"></canvas>
+    <div id="scrim" class="layer" style="background:linear-gradient(180deg,rgba(4,7,14,.88) 0%,rgba(4,7,14,.5) 20%,rgba(4,7,14,0) 32%),linear-gradient(0deg,rgba(4,7,14,.75) 0%,rgba(4,7,14,0) 30%)"></div>
+
+    <div id="hud" class="layer">
+        <div class="corner" style="left:40px;top:40px;border-left-width:2px;border-top-width:2px"></div>
+        <div class="corner" style="right:40px;top:40px;border-right-width:2px;border-top-width:2px"></div>
+        <div class="corner" style="left:40px;bottom:40px;border-left-width:2px;border-bottom-width:2px"></div>
+        <div class="corner" style="right:40px;bottom:40px;border-right-width:2px;border-bottom-width:2px"></div>
+        <div id="bug"><svg viewBox="-10 -10 20 20" data-gear></svg>MECH TORQUE</div>
+        <div id="hudR"></div>
+    </div>
+
+    <svg id="lines" class="layer"><g id="leader">
+        <line id="ldLine" stroke="#00f0ff" stroke-width="2" />
+        <circle id="ldHalo" r="34" fill="none" stroke="rgba(0,240,255,.35)" stroke-width="2" />
+        <circle id="ldDot" r="9" fill="#00f0ff" />
+    </g></svg>
+
+    <div id="copy" class="layer">
+        <div id="stamp"><b id="stampT">02:47</b><span id="stampL">Night shift · Line 4</span></div>
+        <div class="k h1" id="s1" data-y=".10">Every shift.</div>
+        <div class="k h1" id="s2" data-y=".155">Same valve.</div>
+        <div class="k h1" id="s3" data-y=".21"><span class="warm">Same fight.</span></div>
+        <div class="k h1" id="s4" data-y=".10">Two people.</div>
+        <div class="k h1" id="s5" data-y=".155">One cheater bar.</div>
+        <div class="k h1" id="s6" data-y=".21"><span class="warm">Still stuck.</span></div>
+        <div class="k h1 center" id="c1" data-y=".80">There's a better way.</div>
+        <div class="k mono" id="bpTag" data-y=".095">MT-30 · Worm gear operator · 700 Nm</div>
+        <div class="k h1" id="bp1" data-y=".125">It starts as a line.</div>
+        <div class="k h1" id="bp2" data-y=".125">Then it becomes <span class="accent">iron.</span></div>
+        <div class="k mono" id="anTag" data-y=".095">Engineered in Rajkot</div>
+        <div class="k h1" id="np1" data-y=".125">Rated <span class="accent">700 Nm.</span></div>
+        <div class="k h3" id="np2" data-y=".195">ISO 5211 F07 · F10 · F12 · up to 32 mm bore</div>
+        <div class="k h1" id="in1" data-y=".10">Same valve.</div>
+        <div class="k h1" id="in2" data-y=".155">New <span class="accent">drive.</span></div>
+        <div class="k mono" id="in3" data-y=".875">Bolts straight onto the ISO 5211 top flange</div>
+        <div class="k h1" id="e1" data-y=".10">One hand.</div>
+        <div class="k h1" id="e2" data-y=".155"><span class="accent">Ninety degrees.</span></div>
+        <div class="k h1" id="h1" data-y=".10">Let go.</div>
+        <div class="k h1" id="h2" data-y=".155">It <span class="accent">holds.</span></div>
+        <div class="k h3" id="h3" data-y=".85">Self-locking worm drive. Holds any position without a brake.</div>
+        <div class="k h1" id="r1" data-y=".10">Same valve.</div>
+        <div class="k h1" id="r2" data-y=".155"><span class="accent">No fight.</span></div>
+    </div>
+
+    <div id="callout" class="layer"><div class="lab" id="lab"><div id="pnum"></div><div id="pname"></div><div id="pspec"></div><div id="pbar"><i></i></div></div></div>
+    <div id="dialWrap" class="layer"><div id="dial"><div id="dialDeg">0<sup>°</sup></div><div id="dialTrack"><i></i></div><div id="dialLabels"><span>CLOSE</span><span>OPEN</span></div></div></div>
+    <div id="glintWrap" class="layer"><div id="glint"></div></div>
+
+    <div id="callWrap" class="layer">
+        <div id="phone">
+            <div id="phTop">CALLING</div>
+            <div id="phLogo"><i class="ring" id="rg1"></i><i class="ring" id="rg2"></i><div class="disc"><svg viewBox="-10 -10 20 20" data-gear></svg></div></div>
+            <div id="phName">MECH TORQUE</div>
+            <div id="phNum">+91 99131 91343</div>
+            <div id="phWave"></div>
+            <div id="phStatus">RINGING</div>
+        </div>
+    </div>
+    <svg id="wipeEdge" class="layer"><line id="weLine" stroke="#00f0ff" stroke-width="3" /></svg>
+
+    <div id="end" class="layer">
+        <svg id="logo" viewBox="-10.5 -10.5 21 21">
+            <path id="lgA" fill="none" stroke="currentColor" stroke-width=".9" stroke-linejoin="round" stroke-linecap="round" d="M6.35,0.82 L8.96,2.08 L7.81,4.87 L5.07,3.91 L3.91,5.07 L4.87,7.81 L2.08,8.96 L0.82,6.35 L-0.82,6.35 L-2.08,8.96 L-4.87,7.81 L-3.91,5.07 L-5.07,3.91 L-7.81,4.87 L-8.96,2.08 L-6.35,0.82 L-6.35,-0.82 L-8.96,-2.08 L-7.81,-4.87 L-5.07,-3.91 L-3.91,-5.07 L-4.87,-7.81 L-2.08,-8.96 L-0.82,-6.35 L0.82,-6.35 L2.08,-8.96 L4.87,-7.81 L3.91,-5.07 L5.07,-3.91 L7.81,-4.87 L8.96,-2.08 L6.35,-0.82 Z" />
+            <path id="lgB" fill="none" stroke="currentColor" stroke-width=".9" stroke-linecap="round" d="M2.6 -2.3A3.5 3.5 0 1 0 2.6 2.3" />
+        </svg>
+        <div id="word">MECH TORQUE</div>
+        <div class="k h2 center" id="en1" style="font-size:46px">Gearboxes that drive valve excellence.</div>
+        <div class="k mono center" id="en2">MT-20 to MT-60 · 250 to 2,000 Nm</div>
+        <div class="k h3 center" id="en3" style="color:var(--ink)">+91 99131 91343</div>
+        <div class="k mono center" id="en4" style="color:var(--ink-soft);letter-spacing:.08em;text-transform:none">infomechtorque@gmail.com · Rajkot, India</div>
+    </div>
+    <div id="flash" class="layer"></div>
+    <div id="letter" class="layer" style="--lb:0px"></div>
+
+    <div style="display:none">
+        <div id="pin"></div><div id="track"></div><ol id="rail"></ol>
+        <div><h1 id="head"></h1><p id="lede"></p><span id="tag"></span></div>
+        <div id="specs"></div><a id="cta"></a>
+        <svg id="calloutSvg"><line id="calloutLine" /><circle id="calloutDot" /><circle id="calloutHalo" /><circle id="calloutRing" /></svg>
+        <div id="calloutLabel"><span id="calloutTag"></span></div>
+    </div>
+</div>
+
+<script src="vendor/three.min.js"></script>
+<script src="story-timeline.js"></script>
+<script>
+(async () => {
+'use strict';
+const qs = new URLSearchParams(location.search);
+const W = +qs.get('w') || 1080, H = +qs.get('h') || 1920;
+const ASP = W / H, TALL = ASP < .7;
+const stage = document.getElementById('stage');
+stage.style.width = W + 'px'; stage.style.height = H + 'px';
+const $ = id => document.getElementById(id);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, t) => a + (b - a) * t;
+const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const easeOut = t => 1 - Math.pow(1 - t, 3);
+const easeIn = t => t * t * t;
+const easeOutExpo = t => t >= 1 ? 1 : 1 - Math.pow(2, -10 * t);
+const smooth = t => t * t * (3 - 2 * t);
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+const wob = (t, s = 1) => Math.sin(t * 1.3 * s + 1.7) * .5 + Math.sin(t * 2.9 * s + .4) * .3 + Math.sin(t * 6.1 * s + 2.2) * .2;
+
+/* ------------------------------------------------------------------
+   1. The website's own model (model3d.js), geometry untouched.
+------------------------------------------------------------------- */
+const pin = $('pin'); pin.style.cssText = `width:${W}px;height:${H}px`;
+let src = await (await fetch('../model3d.js')).text();
+const patch = (a, b) => { if (!src.includes(a)) throw new Error('patch target missing: ' + a.slice(0, 40)); src = src.replace(a, b); };
+patch('alpha: true,', 'alpha: true, preserveDrawingBuffer: true,');
+patch('function deltaAt(p) {', 'function deltaAt(p) { if (window.__OPEN != null) return D0 + (Math.PI / 2) * window.__OPEN;');
+const lastTick = src.lastIndexOf('tick();');
+src = src.slice(0, lastTick) + `window.MT = { scene, camera, renderer, apply, root, housing, plate, gear, worm, coverG, coverBolts, stopBolts, nuts, indicator, nameplate, wheel, valve, discGroup, floor, M, key, fill, kick, drawPlate, drawCover };` + src.slice(lastTick + 7);
+(0, eval)(src);
+const MT = window.MT;
+if (!MT) throw new Error('model failed to initialise (WebGL?)');
+await document.fonts.ready;
+await Promise.all(['700 90px "Barlow Condensed"', '800 90px "Barlow Condensed"', '500 40px "Barlow"', '700 40px "Barlow"'].map(f => document.fonts.load(f)));
+MT.drawCover(); MT.drawPlate();
+await new Promise(r => setTimeout(r, 300)); MT.drawPlate();
+
+const { scene, camera, renderer, root, valve } = MT;
+const gl = $('gl');
+renderer.setPixelRatio(1); renderer.setSize(W, H, false);
+camera.aspect = ASP; camera.far = 400; camera.updateProjectionMatrix();
+renderer.localClippingEnabled = true;
+MT.floor.visible = false;
+const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+const UP = V(0, 1, 0);
+
+/* the gearbox and valve live in one rig: at the origin in the studio,
+   on the pipeline in the plant */
+const rig = new THREE.Group(); scene.add(rig); rig.add(root); rig.add(valve);
+const VALVE_Y = -.94, STEM_TOP = .62;
+const FACTORY_RIG_Y = 8.32;                       // puts the stem top ~1.17 m off the floor (1 unit ≈ 146 mm)
+const PIPE_Y = FACTORY_RIG_Y + VALVE_Y - 3.3;    // bore centre
+
+/* studio lights */
+const rimCool = new THREE.DirectionalLight(0xbfe6ff, 1.7); rimCool.position.set(7, 6, -9); scene.add(rimCool);
+const rimWarm = new THREE.DirectionalLight(0xffe0bd, 1.25); rimWarm.position.set(-9, 4, -7); scene.add(rimWarm);
+const topL = new THREE.DirectionalLight(0xffffff, .55); topL.position.set(0, 12, 2); scene.add(topL);
+const sweep = new THREE.PointLight(0xffffff, 0, 7, 1.6); scene.add(sweep);
+
+/* ------------------------------------------------------------------
+   2. Blueprint edges + scan (gearbox only)
+------------------------------------------------------------------- */
+const solidPlane = new THREE.Plane(V(0, 1, 0), 1e4), edgePlane = new THREE.Plane(V(0, -1, 0), -1e4);
+const edgeMat = new THREE.LineBasicMaterial({ color: 0x3fd9ff, transparent: true, opacity: .8, blending: THREE.AdditiveBlending, depthWrite: false, clippingPlanes: [edgePlane] });
+const edges = [], mats = new Set();
+root.traverse(o => {
+    if (!o.isMesh) return;
+    (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => mats.add(m));
+    const m0 = Array.isArray(o.material) ? o.material[0] : o.material;
+    if (m0.transparent) return;
+    const e = new THREE.LineSegments(new THREE.EdgesGeometry(o.geometry, o.geometry.type === 'TubeGeometry' ? 40 : 28), edgeMat);
+    e.renderOrder = 2; o.add(e); edges.push(e);
+});
+mats.forEach(m => { m.clippingPlanes = [solidPlane]; m.clipShadows = true; m.needsUpdate = true; });
+const radialTex = (stops) => {
+    const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d');
+    const gr = g.createRadialGradient(128, 128, 0, 128, 128, 128); stops.forEach(([o, col]) => gr.addColorStop(o, col));
+    g.fillStyle = gr; g.fillRect(0, 0, 256, 256); return new THREE.CanvasTexture(c);
+};
+const sheet = new THREE.Mesh(new THREE.PlaneGeometry(13, 13), new THREE.MeshBasicMaterial({ map: radialTex([[0, 'rgba(120,240,255,.9)'], [.45, 'rgba(0,200,255,.35)'], [1, 'rgba(0,160,255,0)']]), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, opacity: 0 }));
+sheet.rotation.x = -Math.PI / 2; scene.add(sheet);
+function setScan(Y, on) { solidPlane.constant = -Y; edgePlane.constant = Y; edges.forEach(e => e.visible = on); }
+
+/* ------------------------------------------------------------------
+   3. The plant: floor, pipeline either side of the valve, studs,
+      supports, racks, columns, back wall with windows, a sodium lamp,
+      haze, steam and dust. Night first, morning after the install.
+------------------------------------------------------------------- */
+const fac = new THREE.Group(); scene.add(fac);
+const std = (c, r = .8, m = 0, extra = {}) => new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: r, metalness: m, envMapIntensity: .1 }, extra));
+const add = (geo, mat, x, y, z, parent = fac) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; parent.add(m); return m; };
+const matFloor = std(0x23262a, .62, .05);
+const floorM = add(new THREE.PlaneGeometry(260, 260), matFloor, 0, 0, 0); floorM.rotation.x = -Math.PI / 2; floorM.castShadow = false;
+const matLine = std(0xd8a400, .55, 0);
+for (const x of [-15, -15.6]) { const l = add(new THREE.PlaneGeometry(.35, 120), matLine, x, .02, 0); l.rotation.x = -Math.PI / 2; l.castShadow = false; }
+const matPipe = std(0x56605a, .45, .55), matFlg = std(0x4c5551, .4, .6), matStud = std(0xb9c0c6, .3, 1);
+const PIPE_R = 1.85;
+for (const s of [-1, 1]) {
+    const len = s < 0 ? 26 : 46;
+    const p = add(new THREE.CylinderGeometry(PIPE_R, PIPE_R, len, 64, 1, true), matPipe, 0, PIPE_Y, s * (1.2 + len / 2)); p.rotation.x = Math.PI / 2;
+    const f = add(new THREE.CylinderGeometry(2.42, 2.42, .5, 64), matFlg, 0, PIPE_Y, s * .75); f.rotation.x = Math.PI / 2;
+    const hub = add(new THREE.CylinderGeometry(2.0, 2.15, .7, 64), matFlg, 0, PIPE_Y, s * 1.3); hub.rotation.x = Math.PI / 2;
+    for (const zs of [10, 22]) { if (s < 0 && zs > 20) continue; add(new THREE.BoxGeometry(3.4, PIPE_Y - PIPE_R + .1, 1.0), std(0x3a3f44, .7, .3), 0, (PIPE_Y - PIPE_R) / 2, s * zs); }
+}
+for (let i = 0; i < 8; i++) {   // through-studs clamping the wafer valve between the pipe flanges
+    const a = i * Math.PI / 4 + Math.PI / 8;
+    const st = add(new THREE.CylinderGeometry(.09, .09, 2.3, 12), matStud, Math.cos(a) * 2.03, PIPE_Y + Math.sin(a) * 2.03, 0); st.rotation.x = Math.PI / 2;
+    for (const s of [-1, 1]) { const n = add(new THREE.CylinderGeometry(.17, .17, .16, 6), matStud, Math.cos(a) * 2.03, PIPE_Y + Math.sin(a) * 2.03, s * 1.08); n.rotation.x = Math.PI / 2; }
+}
+// background pipe runs and a rack
+const matPipe2 = std(0x3c4447, .5, .5), matSteel = std(0x2b3035, .65, .4), matRed = std(0x7a1d18, .55, .2);
+[[14, 3.2, 1.2, matPipe2], [19, 5.0, .9, matRed], [-22, 4.2, 1.4, matPipe2]].forEach(([x, y, r, m]) => { const p = add(new THREE.CylinderGeometry(r, r, 140, 32, 1, true), m, x, y, 0); p.rotation.x = Math.PI / 2; });
+[[19, .8], [21.5, .6], [24, .9]].forEach(([y, r], i) => { const p = add(new THREE.CylinderGeometry(r, r, 160, 24, 1, true), i === 1 ? matRed : matPipe2, 0, y, -16 + i * 1.8); p.rotation.z = Math.PI / 2; });
+for (const x of [-40, -20, 0, 20, 40]) add(new THREE.BoxGeometry(1.4, 30, 1.4), matSteel, x, 15, -18);
+add(new THREE.BoxGeometry(100, .9, 1.0), matSteel, 0, 18.2, -16.5);
+// back wall + windows
+const wall = add(new THREE.PlaneGeometry(200, 60), std(0x15181c, .9, 0), 0, 30, -26); wall.castShadow = false;
+const sideWall = add(new THREE.PlaneGeometry(200, 60), std(0x15181c, .9, 0), 46, 30, 0); sideWall.rotation.y = -Math.PI / 2; sideWall.castShadow = false;
+const winMat = new THREE.MeshBasicMaterial({ color: 0x070b14, fog: false });
+const windows = [];
+for (let i = -6; i <= 6; i++) for (const y of [16, 23]) { const w = add(new THREE.PlaneGeometry(5.2, 5.2), winMat, i * 7.2, y, -25.9); w.castShadow = w.receiveShadow = false; windows.push(w); }
+for (let i = -5; i <= 5; i++) { const w = add(new THREE.PlaneGeometry(5.2, 6.5), winMat, 45.9, 19, i * 7.6); w.rotation.y = -Math.PI / 2; w.castShadow = w.receiveShadow = false; windows.push(w); }
+// sodium lamp
+const lampPos = V(-5, 25, 3);
+add(new THREE.CylinderGeometry(1.0, 1.6, .9, 24, 1, true), std(0x222428, .5, .6), lampPos.x, lampPos.y + .3, lampPos.z);
+const bulb = add(new THREE.SphereGeometry(.45, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffb060 }), lampPos.x, lampPos.y - .2, lampPos.z); bulb.castShadow = false;
+add(new THREE.CylinderGeometry(.06, .06, 10, 6), matSteel, lampPos.x, lampPos.y + 5.5, lampPos.z);
+const sodium = new THREE.SpotLight(0xff9d4a, 3.2, 70, .62, .7, 1.2);
+sodium.position.copy(lampPos); sodium.target.position.set(-5, 0, -1); scene.add(sodium); scene.add(sodium.target);
+sodium.castShadow = true; sodium.shadow.mapSize.set(2048, 2048); sodium.shadow.bias = -.0004; sodium.shadow.camera.near = 5; sodium.shadow.camera.far = 60;
+const moon = new THREE.DirectionalLight(0x6f8fd0, .55); moon.position.set(30, 18, -30); scene.add(moon);
+const sun = new THREE.DirectionalLight(0xffc98f, 0); sun.position.set(40, 22, -34); sun.target.position.set(-6, 0, 0); scene.add(sun); scene.add(sun.target);
+sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -25, right: 25, top: 25, bottom: -25, near: 10, far: 120 }); sun.shadow.bias = -.0004;
+const hemi = new THREE.HemisphereLight(0x9fb4d8, 0x1a1410, .12); scene.add(hemi);
+// light cone under the lamp, morning shafts through the windows
+const vgrad = (top, bot) => { const c = document.createElement('canvas'); c.width = 4; c.height = 256; const g = c.getContext('2d'); const gr = g.createLinearGradient(0, 0, 0, 256); gr.addColorStop(0, top); gr.addColorStop(1, bot); g.fillStyle = gr; g.fillRect(0, 0, 4, 256); return new THREE.CanvasTexture(c); };
+const cone = new THREE.Mesh(new THREE.ConeGeometry(15, 25, 48, 1, true), new THREE.MeshBasicMaterial({ map: vgrad('rgba(255,170,90,.0)', 'rgba(255,160,80,1)'), transparent: true, opacity: .07, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false }));
+cone.position.set(lampPos.x, lampPos.y - 12.5, lampPos.z - .5); fac.add(cone);
+const shafts = [];
+for (let i = 0; i < 5; i++) {
+    const s = new THREE.Mesh(new THREE.PlaneGeometry(5, 70), new THREE.MeshBasicMaterial({ map: vgrad('rgba(255,215,160,1)', 'rgba(255,200,140,0)'), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false }));
+    s.position.set(-14 + i * 7.2, 14, -14); s.rotation.set(0, .25, .62); fac.add(s); shafts.push(s);
+}
+// steam leaking at the flange, dust in the light
+const steamTex = radialTex([[0, 'rgba(255,255,255,.55)'], [.5, 'rgba(255,255,255,.18)'], [1, 'rgba(255,255,255,0)']]);
+const steam = Array.from({ length: 26 }, (_, i) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: steamTex, transparent: true, depthWrite: false, color: 0xd9d2c8, opacity: 0 })); fac.add(s); s.userData.k = i; return s; });
+const dustGeo = new THREE.BufferGeometry(), DUST = 420, dustBase = new Float32Array(DUST * 3);
+let ds = 3; const drnd = () => ((ds = (ds * 16807) % 2147483647) / 2147483647);
+for (let i = 0; i < DUST; i++) { dustBase[i * 3] = -18 + drnd() * 28; dustBase[i * 3 + 1] = drnd() * 22; dustBase[i * 3 + 2] = -12 + drnd() * 22; }
+dustGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(DUST * 3), 3));
+const dust = new THREE.Points(dustGeo, new THREE.PointsMaterial({ color: 0xffd2a0, size: .09, transparent: true, opacity: .55, blending: THREE.AdditiveBlending, depthWrite: false }));
+fac.add(dust);
+const fogNight = new THREE.FogExp2(0x0b0d12, .016), fogDay = new THREE.FogExp2(0x2a2420, .011);
+
+/* cheater bar on the bare valve stem (rides the disc/stem) */
+const bar = new THREE.Group();
+{
+    const steel = std(0x6d7276, .42, .85), worn = std(0x8a5a2b, .7, .3);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(1.1, .55, .8), steel); head.castShadow = true; bar.add(head);
+    const pipe = new THREE.Mesh(new THREE.CylinderGeometry(.2, .2, 10.4, 20), steel); pipe.rotation.z = Math.PI / 2; pipe.position.x = -5.5; pipe.castShadow = true; bar.add(pipe);
+    const grip = new THREE.Mesh(new THREE.CylinderGeometry(.24, .24, 2.6, 20), worn); grip.rotation.z = Math.PI / 2; grip.position.x = -9.3; grip.castShadow = true; bar.add(grip);
+}
+bar.position.y = .42; MT.discGroup.add(bar);
+const barPt = (d, side = -.27) => bar.localToWorld(V(-d, 0, side));
+
+/* ------------------------------------------------------------------
+   4. Workers: a point-based rig. Joint positions come from a few pose
+      parameters plus two-bone IK for arms and legs; limbs are meshes
+      stretched between joints. 1 unit ≈ 146 mm, so a person is ~12.
+------------------------------------------------------------------- */
+function ik2(A, T, l1, l2, pole) {
+    const d = T.clone().sub(A); let len = d.length(); const dir = d.normalize();
+    len = clamp(len, Math.abs(l1 - l2) + 1e-3, (l1 + l2) * .999);
+    const a = (l1 * l1 - l2 * l2 + len * len) / (2 * len), h = Math.sqrt(Math.max(0, l1 * l1 - a * a));
+    const p = pole.clone().sub(dir.clone().multiplyScalar(pole.dot(dir))).normalize();
+    return [A.clone().addScaledVector(dir, a).addScaledVector(p, h), A.clone().addScaledVector(dir, len)];
+}
+const lathe = (pts, seg = 28) => new THREE.LatheGeometry(pts.map(([y, r]) => new THREE.Vector2(r, y)), seg);
+const TORSO = lathe([[0, 0], [.02, .78], [.12, .95], [.35, .9], [.6, .98], [.82, 1.08], [.94, 1.0], [1.0, .62], [1.02, 0]]);
+const VEST = lathe([[.28, .97], [.6, 1.03], [.82, 1.13], [.93, 1.06], [.97, .8]]);
+const STRIPE = lathe([[0, 1.07], [.07, 1.07]], 28);
+const CYL = new THREE.CylinderGeometry(1, 1, 1, 18); CYL.translate(0, .5, 0);
+const SPH = new THREE.SphereGeometry(1, 20, 14);
+const HELM = new THREE.SphereGeometry(1, 28, 14, 0, Math.PI * 2, 0, Math.PI / 2);
+class Worker {
+    constructor(o) {
+        this.g = new THREE.Group(); scene.add(this.g);
+        const suit = std(o.suit, .85, 0), vest = std(o.vest, .6, 0, { emissive: o.vest, emissiveIntensity: .06 }), refl = std(0xdfe4ea, .25, .7);
+        const skin = std(o.skin, .6, 0), helm = std(o.helmet, .35, .05), glove = std(o.glove, .8, 0), boot = std(0x0d0d0e, .6, .1), dark = std(0x101214, .3, .2);
+        const m = (geo, mat) => { const x = new THREE.Mesh(geo, mat); x.castShadow = x.receiveShadow = true; this.g.add(x); return x; };
+        this.torso = m(TORSO, suit); this.vest = m(VEST, vest); this.st1 = m(STRIPE, refl); this.st2 = m(STRIPE, refl);
+        this.hips = m(SPH, suit); this.neck = m(CYL, skin); this.head = m(SPH, skin); this.helm = m(HELM, helm); this.brim = m(new THREE.CylinderGeometry(1, 1, 1, 28), helm); this.glass = m(new THREE.BoxGeometry(1, 1, 1), dark);
+        this.limbs = {}; ['uaL', 'uaR', 'faL', 'faR', 'thL', 'thR', 'shL', 'shR'].forEach(k => this.limbs[k] = m(CYL, k.startsWith('th') || k.startsWith('sh') || k.startsWith('ua') ? suit : suit));
+        this.joints = {}; ['shoL', 'shoR', 'elL', 'elR', 'kneL', 'kneR', 'hipL', 'hipR'].forEach(k => this.joints[k] = m(SPH, suit));
+        this.hands = [m(SPH, glove), m(SPH, glove)]; this.cuffs = [m(CYL, glove), m(CYL, glove)];
+        this.feet = [m(new THREE.BoxGeometry(1, 1, 1), boot), m(new THREE.BoxGeometry(1, 1, 1), boot)];
+    }
+    limb(mesh, a, b, r0) {
+        const d = b.clone().sub(a), len = d.length();
+        mesh.position.copy(a); mesh.quaternion.setFromUnitVectors(UP, d.normalize()); mesh.scale.set(r0, len, r0);
+    }
+    basis(mesh, pos, X, Y, Z, s) { mesh.position.copy(pos); mesh.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(X, Y, Z)); mesh.scale.copy(s); }
+    pose(P) {
+        this.g.visible = P.visible !== false;
+        if (!this.g.visible) return;
+        const f = V(Math.sin(P.yaw), 0, Math.cos(P.yaw)), right = f.clone().cross(UP).normalize();   // person's right
+        const lean = P.lean || 0, roll = P.roll || 0, br = P.breath || 0;
+        const tdir = UP.clone().multiplyScalar(Math.cos(lean)).addScaledVector(f, Math.sin(lean)).addScaledVector(right, Math.sin(roll)).normalize();
+        const tf = f.clone().sub(tdir.clone().multiplyScalar(f.dot(tdir))).normalize();
+        const tx = tdir.clone().cross(tf).normalize();
+        const pel = P.pos.clone();
+        const chest = pel.clone().addScaledVector(tdir, 3.15 + br * .06);
+        // torso + vest + stripes
+        const sc = V(1.28 + br * .02, 3.75, .82 + br * .03);
+        this.basis(this.torso, pel.clone().addScaledVector(tdir, -.3), tx, tdir, tf, sc);
+        this.basis(this.vest, pel.clone().addScaledVector(tdir, -.3), tx, tdir, tf, sc);
+        this.basis(this.st1, pel.clone().addScaledVector(tdir, -.3 + 3.75 * .5), tx, tdir, tf, V(sc.x * 1.0, 3.75, sc.z * 1.0));
+        this.basis(this.st2, pel.clone().addScaledVector(tdir, -.3 + 3.75 * .68), tx, tdir, tf, V(sc.x * 1.06, 3.75, sc.z * 1.06));
+        this.st1.scale.y = this.st2.scale.y = 3.75;
+        this.basis(this.hips, pel.clone().addScaledVector(tdir, -.15), tx, tdir, tf, V(1.18, .78, .8));
+        // head: looks at P.look if given
+        const neckB = chest.clone().addScaledVector(tdir, .2), neckT = neckB.clone().addScaledVector(tdir, .55);
+        this.limb(this.neck, neckB, neckT, .34);
+        let hf = tf.clone();
+        if (P.look) { const want = P.look.clone().sub(neckT).normalize(); hf = hf.lerp(want, .8).normalize(); }
+        if (P.headPitch) hf.addScaledVector(tdir, -P.headPitch).normalize();
+        const hup = tdir.clone().sub(hf.clone().multiplyScalar(tdir.dot(hf))).normalize(), hx = hup.clone().cross(hf).normalize();
+        const hc = neckT.clone().addScaledVector(hup, .62).addScaledVector(hf, .05);
+        this.basis(this.head, hc, hx, hup, hf, V(.66, .78, .72));
+        this.basis(this.helm, hc.clone().addScaledVector(hup, .12), hx, hup, hf, V(.84, .82, .9));
+        this.basis(this.brim, hc.clone().addScaledVector(hup, .14).addScaledVector(hf, .16), hx, hup, hf, V(.98, .06, 1.08));
+        this.basis(this.glass, hc.clone().addScaledVector(hf, .66).addScaledVector(hup, .02), hx, hup, hf, V(.92, .13, .1));
+        // arms
+        [[-1, 'L', P.hl, P.poleL], [1, 'R', P.hr, P.poleR]].forEach(([s, k, tgt, pole], i) => {
+            const sho = chest.clone().addScaledVector(right, s * 1.3).addScaledVector(tdir, -.35);
+            const T = tgt ? tgt.clone() : sho.clone().addScaledVector(tdir, -3.7).addScaledVector(f, .35).addScaledVector(right, s * .35);
+            const pl = pole || UP.clone().multiplyScalar(-1).addScaledVector(right, s * .9).addScaledVector(f, -.4);
+            const [el, wr] = ik2(sho, T, 2.05, 1.95, pl);
+            this.limb(this.limbs['ua' + k], sho, el, .37); this.limb(this.limbs['fa' + k], el, wr, .31);
+            this.joints['sho' + k].position.copy(sho); this.joints['sho' + k].scale.setScalar(.47);
+            this.joints['el' + k].position.copy(el); this.joints['el' + k].scale.setScalar(.33);
+            const fd = wr.clone().sub(el).normalize();
+            this.limb(this.cuffs[i], wr.clone().addScaledVector(fd, -.35), wr.clone().addScaledVector(fd, .05), .34);
+            this.hands[i].position.copy(wr).addScaledVector(fd, .3); this.hands[i].quaternion.setFromUnitVectors(UP, fd); this.hands[i].scale.set(.3, .42, .26);
+        });
+        // legs
+        [[-1, 'L', P.fl], [1, 'R', P.fr]].forEach(([s, k, foot], i) => {
+            const hip = pel.clone().addScaledVector(right, s * .62).addScaledVector(tdir, -.25);
+            const ff = P.footYaw != null ? V(Math.sin(P.footYaw), 0, Math.cos(P.footYaw)) : f;
+            const ank = foot.clone().add(V(0, .55, 0)).addScaledVector(ff, -.15);
+            const [kn, an] = ik2(hip, ank, 3.1, 3.05, ff.clone().add(right.clone().multiplyScalar(s * .15)));
+            this.limb(this.limbs['th' + k], hip, kn, .5); this.limb(this.limbs['sh' + k], kn, an, .4);
+            this.joints['hip' + k].position.copy(hip); this.joints['hip' + k].scale.setScalar(.55);
+            this.joints['kne' + k].position.copy(kn); this.joints['kne' + k].scale.setScalar(.42);
+            const ft = this.feet[i]; ft.position.copy(an).addScaledVector(ff, .42).add(V(0, -.33, 0)); ft.position.y = Math.max(ft.position.y, foot.y + .22);
+            ft.quaternion.setFromUnitVectors(V(0, 0, 1), ff); ft.scale.set(.72, .46, 1.55);
+        });
+    }
+}
+const A = new Worker({ suit: 0x1f2b3b, vest: 0xff6a10, skin: 0x8a5a3c, helmet: 0xf2c200, glove: 0x8a6a3a });
+const B = new Worker({ suit: 0x2c3138, vest: 0xc6dc12, skin: 0x6e4630, helmet: 0xf4f4f0, glove: 0x5c6066 });
+
+/* walking: pelvis glides from a to b, feet plant alternately */
+function walk(t, t0, t1, a, b, steps = 4, yaw) {
+    const u = prog(t, t0, t1), dir = b.clone().sub(a); const yw = yaw != null ? yaw : Math.atan2(dir.x, dir.z);
+    const f = V(Math.sin(yw), 0, Math.cos(yw)), right = f.clone().cross(UP).normalize();
+    const path = x => a.clone().lerp(b, smooth(clamp(x)));
+    const ph = u * steps, k = Math.floor(ph), w = ph - k;
+    const plant = (side, n) => path(n / steps).addScaledVector(right, side * .62);
+    const feet = [-1, 1].map((side, i) => {
+        // left foot moves on even steps, right on odd
+        const moving = k % 2 === i && u < 1;
+        const last = k % 2 === i ? k - 1 : k; const from = plant(side, Math.max(0, last)), to = plant(side, Math.min(steps, last + 2));
+        if (!moving) return plant(side, clamp(k % 2 === i ? k - 1 : k, 0, steps)).setY(0);
+        const p = from.clone().lerp(to, smooth(w)); p.y = Math.sin(Math.PI * w) * .55; return p;
+    });
+    const pos = path(u); pos.y = 6.4 - .16 * Math.abs(Math.sin(Math.PI * ph)) + (u > 0 && u < 1 ? .1 : 0);
+    return { pos, yaw: yw, fl: feet[0], fr: feet[1], lean: .08 * Math.sin(Math.PI * u) };
+}
+const stand = (x, z, yaw, extra = {}) => {
+    const f = V(Math.sin(yaw), 0, Math.cos(yaw)), right = f.clone().cross(UP).normalize();
+    return Object.assign({ pos: V(x, 6.45, z), yaw, lean: .04, fl: V(x, 0, z).addScaledVector(right, -.7).addScaledVector(f, .2), fr: V(x, 0, z).addScaledVector(right, .7).addScaledVector(f, -.15) }, extra);
+};
+const mixP = (P, Q, u) => {   // blend two poses
+    const o = Object.assign({}, u < .5 ? P : Q);
+    ['pos', 'fl', 'fr'].forEach(k => o[k] = P[k].clone().lerp(Q[k], u));
+    ['lean', 'roll', 'headPitch', 'breath'].forEach(k => o[k] = lerp(P[k] || 0, Q[k] || 0, u));
+    let dy = (Q.yaw - P.yaw); dy = Math.atan2(Math.sin(dy), Math.cos(dy)); o.yaw = P.yaw + dy * u;
+    ['hl', 'hr'].forEach(k => { if (P[k] || Q[k]) { const a = P[k] || defaultHand(P, k), b = Q[k] || defaultHand(Q, k); o[k] = a.clone().lerp(b, u); } });
+    if (P.look || Q.look) o.look = (P.look || Q.look).clone().lerp(Q.look || P.look, u);
+    return o;
+};
+function defaultHand(P, k) {
+    const f = V(Math.sin(P.yaw), 0, Math.cos(P.yaw)), right = f.clone().cross(UP).normalize(), s = k === 'hl' ? -1 : 1;
+    return P.pos.clone().add(V(0, -.9, 0)).addScaledVector(right, s * 1.75).addScaledVector(f, .3);
+}
+
+/* ------------------------------------------------------------------
+   5. Story choreography
+------------------------------------------------------------------- */
+const DEG = Math.PI / 180;
+function barAngle(t) {
+    const tr = (a) => a * (1 + .12 * Math.sin(t * 41) + .08 * Math.sin(t * 67));
+    if (t < TL.push1[0]) return 0;
+    if (t < TL.slip1[0]) return tr(3.2 * DEG * ease(prog(t, TL.push1[0], TL.push1[1])));
+    if (t < TL.slip1[1]) return 3.2 * DEG * (1 - easeIn(prog(t, TL.slip1[0], TL.slip1[1])));
+    if (t < TL.push2[0]) return 0;
+    if (t < TL.slip2[0]) return tr(6.5 * DEG * ease(prog(t, TL.push2[0], TL.push2[1])));
+    if (t < TL.slip2[1]) return 6.5 * DEG * (1 - easeIn(prog(t, TL.slip2[0], TL.slip2[1])));
+    return 0;
+}
+/* pushing stance behind the bar at grip distances d1/d2 */
+function pushPose(t, d1, d2, effort, phase = 0) {
+    const g1 = barPt(d1), g2 = barPt(d2), mid = g1.clone().add(g2).multiplyScalar(.5);
+    const sh = wob(t * 3 + phase, 2) * .06 * effort;
+    const pos = V(mid.x, 5.75 - .35 * effort, mid.z - 4.45 + sh);
+    return {
+        pos, yaw: 0, lean: .58 + .12 * effort + sh * .5, roll: wob(t + phase, 3) * .03 * effort,
+        fl: V(mid.x - .55, 0, mid.z - 2.6), fr: V(mid.x + .75, 0, mid.z - 7.0),
+        hl: g2.clone(), hr: g1.clone(), poleL: V(-.4, -1, -.3), poleR: V(.4, -1, -.3), headPitch: -.25 - .15 * effort
+    };
+}
+function stumble(P, u) {   // hands lose the bar, body pitches forward, then recovers
+    const s = Math.sin(Math.PI * clamp(u * 1.25)) * (1 - u * .3);
+    const o = Object.assign({}, P);
+    o.pos = P.pos.clone().add(V(0, -.7 * s, 1.5 * s)); o.lean = P.lean + .25 * s;
+    o.hl = P.hl.clone().add(V(-.3, -1.6 * s, 1.0 * s)); o.hr = P.hr.clone().add(V(.3, -1.4 * s, 1.1 * s));
+    o.fl = P.fl.clone().add(V(0, 0, .9 * clamp(u * 3)));
+    return o;
+}
+function poseA(t) {
+    if (t < TL.install[0]) {
+        const stemTop = V(0, FACTORY_RIG_Y + VALVE_Y + STEM_TOP, 0);
+        if (t < TL.slip1[0]) return pushPose(t, 9.75, 8.85, prog(t, TL.push1[0], TL.push1[1]), 0);
+        if (t < TL.push2[0] - .4) {
+            const P = pushPose(TL.slip1[0], 9.75, 8.85, 1);
+            const u = prog(t, TL.slip1[0], TL.slip1[0] + 1.2);
+            const S = stumble(P, u);
+            const back = stand(-9.2, -2.8, .15, { hl: V(-10.9, 6.2, -2.0), hr: V(-7.6, 6.4, -2.2), headPitch: .25, look: stemTop });
+            return mixP(S, back, ease(prog(t, TL.slip1[0] + .9, TL.push2[0] - .9)));
+        }
+        if (t < TL.push2[0]) { const P0 = stand(-9.2, -2.8, .15, { headPitch: .2 }), P1 = pushPose(TL.push2[0], 9.75, 8.85, 0); return mixP(P0, P1, ease(prog(t, TL.push2[0] - .4, TL.push2[0]))); }
+        if (t < TL.slip2[0]) return pushPose(t, 9.75, 8.85, prog(t, TL.push2[0], TL.push2[1]), 1.3);
+        const P = pushPose(TL.slip2[0], 9.75, 8.85, 1, 1.3);
+        const S = stumble(P, prog(t, TL.slip2[0], TL.slip2[0] + 1.2));
+        // defeat: stands up, hands on hips, head down, heavy breathing
+        const D = stand(-9.6, -3.4, .35, { lean: .12, headPitch: .55, breath: Math.sin(t * 7) });
+        const f = V(Math.sin(.35), 0, Math.cos(.35)), r = f.clone().cross(UP);
+        D.hl = D.pos.clone().add(V(0, .55, 0)).addScaledVector(r, -1.55).addScaledVector(f, .2); D.hr = D.pos.clone().add(V(0, .55, 0)).addScaledVector(r, 1.55).addScaledVector(f, .2);
+        D.poleL = r.clone().multiplyScalar(-1).addScaledVector(f, -.6); D.poleR = r.clone().addScaledVector(f, -.6);
+        return mixP(S, D, ease(prog(t, TL.slip2[0] + .7, TL.defeat[1] - .3)));
+    }
+    // morning: watches the drop, walks to the wheel, turns it with one hand
+    const gb = V(-1, FACTORY_RIG_Y + 2 + 9 * (1 - ease(prog(t, TL.drop[0], TL.drop[1]))), 0);
+    const watch = stand(-9.8, 2.6, 1.75, { look: gb });
+    const hipHand = (P, side) => { const f = V(Math.sin(P.yaw), 0, Math.cos(P.yaw)), r = f.clone().cross(UP); return P.pos.clone().add(V(0, .5, 0)).addScaledVector(r, side * 1.55).addScaledVector(f, .15); };
+    const atWheel = stand(-6.55, 1.0, Math.PI / 2, { lean: .2 });
+    if (t < TL.walkA[0]) return watch;
+    if (t < TL.walkA[1]) { const w = walk(t, TL.walkA[0], TL.walkA[1], V(-9.8, 0, 2.6), V(-6.55, 0, 1.0), 4); w.yaw = lerp(2.0, Math.PI / 2, prog(t, TL.walkA[0], TL.walkA[1])); w.look = MT.wheel.getWorldPosition(V()); return w; }
+    const rim = rimAnchor.getWorldPosition(V());
+    const P = Object.assign({}, atWheel);
+    P.look = rim.clone().lerp(MT.indicator.getWorldPosition(V()), .3);
+    P.hl = hipHand(atWheel, -1); P.poleL = V(-.6, 0, -1);
+    const reach = ease(prog(t, TL.grip[0] - .25, TL.grip[1])) * (1 - ease(prog(t, TL.release[0], TL.release[1])));
+    const rest = defaultHand(atWheel, 'hr');
+    P.hr = rest.clone().lerp(rim, reach); P.poleR = V(-.3, -1, .9);
+    const turning = prog(t, TL.open[0], TL.open[1]) > 0 && t < TL.open[1];
+    P.lean = .2 + (turning ? .04 * Math.sin(t * 9) : 0);
+    P.pos = atWheel.pos.clone().add(V(turning ? .08 * Math.sin(t * 9) : 0, 0, 0));
+    if (t < TL.release[1] + .3) return P;
+    // turns toward B, fist bump
+    const yawB = Math.atan2(-2.8, -3.4);
+    const T = stand(-6.55, 1.0, yawB, { lean: .05 });
+    T.look = V(-9.4, 9.2, -2.4);
+    const bumpPt = V(-7.9, 8.4, -.75);
+    const bu = smooth(prog(t, TL.bump - .45, TL.bump)) * (1 - smooth(prog(t, TL.bump + .25, TL.bump + .7)));
+    T.hr = defaultHand(T, 'hr').lerp(bumpPt.clone().add(V(.18, 0, .15)), bu);
+    T.poleR = V(.5, -1, 0);
+    return mixP(P, T, ease(prog(t, TL.release[1] + .3, TL.release[1] + 1.1)));
+}
+function poseB(t) {
+    const stemTop = V(0, FACTORY_RIG_Y + VALVE_Y + STEM_TOP, 0);
+    if (t < TL.install[0]) {
+        const startB = stand(-3.5, -9.5, -.4, { look: stemTop });
+        if (t < TL.walkB[0]) return Object.assign(startB, { visible: t > TL.slip1[0] - .3, pos: startB.pos.clone().add(V(0, 0, -2 * (1 - prog(t, TL.slip1[0] - .3, TL.walkB[0])))) });
+        if (t < TL.walkB[1]) { const w = walk(t, TL.walkB[0], TL.walkB[1], V(-3.5, 0, -9.5), V(-5.8, 0, -4.3), 5); w.look = stemTop; return w; }
+        if (t < TL.push2[0]) { const P0 = stand(-5.8, -4.3, 0, { look: stemTop }); const P1 = pushPose(TL.push2[0], 6.2, 5.35, 0, 2.1); return mixP(P0, P1, ease(prog(t, TL.walkB[1], TL.push2[0]))); }
+        if (t < TL.slip2[0]) return pushPose(t, 6.2, 5.35, prog(t, TL.push2[0], TL.push2[1]), 2.1);
+        const P = pushPose(TL.slip2[0], 6.2, 5.35, 1, 2.1);
+        const S = stumble(P, prog(t, TL.slip2[0] + .05, TL.slip2[0] + 1.25));
+        // hands on knees, catching breath
+        const D = stand(-5.6, -3.6, -.25, { lean: .95, headPitch: -.2, breath: Math.sin(t * 6.3 + 1) });
+        D.pos = D.pos.clone().add(V(0, -.9, -.6));
+        const f = V(Math.sin(-.25), 0, Math.cos(-.25)), r = f.clone().cross(UP);
+        D.hl = V(-5.6, 3.3, -3.6).addScaledVector(r, -.75).addScaledVector(f, 1.1); D.hr = V(-5.6, 3.3, -3.6).addScaledVector(r, .75).addScaledVector(f, 1.1);
+        D.poleL = r.clone().multiplyScalar(-1); D.poleR = r.clone();
+        return mixP(S, D, ease(prog(t, TL.slip2[0] + .7, TL.defeat[1] - .3)));
+    }
+    const gb = V(-1, FACTORY_RIG_Y + 2 + 9 * (1 - ease(prog(t, TL.drop[0], TL.drop[1]))), 0);
+    const yaw0 = 1.1;
+    const P = stand(-10.4, -3.2, yaw0, { look: t < TL.walkA[0] ? gb : rimAnchor.getWorldPosition(V()) });
+    // arms folded, satisfied
+    const f = V(Math.sin(yaw0), 0, Math.cos(yaw0)), r = f.clone().cross(UP);
+    const ch = P.pos.clone().add(V(0, 2.0, 0));
+    P.hl = ch.clone().addScaledVector(r, .75).addScaledVector(f, 1.05); P.hr = ch.clone().addScaledVector(r, -.8).addScaledVector(f, 1.15).add(V(0, .25, 0));
+    P.poleL = r.clone().multiplyScalar(-1).add(V(0, -1, 0)); P.poleR = r.clone().add(V(0, -1, 0));
+    if (t < TL.release[1] + .6) return P;
+    if (t < TL.release[1] + 1.6) { const w = walk(t, TL.release[1] + .6, TL.release[1] + 1.6, V(-10.4, 0, -3.2), V(-9.4, 0, -2.4), 2, Math.atan2(2.8, 3.4)); w.look = V(-6.55, 9.2, 1); return mixP(P, w, ease(prog(t, TL.release[1] + .6, TL.release[1] + .9))); }
+    const S = stand(-9.4, -2.4, Math.atan2(2.8, 3.4), { lean: .05, look: V(-6.55, 9.2, 1) });
+    const bumpPt = V(-7.9, 8.4, -.75);
+    const bu = smooth(prog(t, TL.bump - .45, TL.bump)) * (1 - smooth(prog(t, TL.bump + .25, TL.bump + .7)));
+    S.hr = defaultHand(S, 'hr').lerp(bumpPt.clone().add(V(-.18, 0, -.15)), bu); S.poleR = V(-.5, -1, 0);
+    return S;
+}
+const rimAnchor = new THREE.Object3D(); rimAnchor.position.set(-.12, 0, 1.2); MT.wheel.add(rimAnchor);
+
+/* ------------------------------------------------------------------
+   6. Product state per time
+------------------------------------------------------------------- */
+const QSEG = [[.04, .15], [.15, .25], [.25, .36], [.36, .47], [.47, .66], [.67, .775], [.775, .815]];
+function qAt(t) {
+    if (t < TL.assembly[0]) return 0;
+    let q = QSEG[0][0];
+    TL.partTimes.forEach((ti, i) => { if (t >= ti) q = lerp(QSEG[i][0], QSEG[i][1], clamp((t - ti) / TL.partMove)); });
+    if (t >= TL.nameplate[0]) q = lerp(.815, .845, clamp((t - TL.nameplate[0]) / .7));
+    return q;
+}
+const isStudio = t => t >= TL.wipe1[0] && t < TL.install[0];
+function setWorld(t) {
+    const studio = isStudio(t);
+    fac.visible = !studio;
+    scene.fog = studio ? null : (t < TL.install[0] ? fogNight : fogDay);
+    MT.key.castShadow = studio;
+    const nightF = t < TL.install[0];
+    const LF = studio ? null : nightF ? { key: .12, fill: .03, kick: .05, rimCool: 1.0, rimWarm: .1, topL: .05 } : { key: .35, fill: .12, kick: .1, rimCool: .5, rimWarm: .5, topL: .15 };
+    [['key', MT.key], ['fill', MT.fill], ['kick', MT.kick], ['rimCool', rimCool], ['rimWarm', rimWarm], ['topL', topL]].forEach(([k, l]) => l.intensity = studio ? l.userData.i : LF[k]);
+    if (studio) {
+        rig.position.set(0, 0, 0);
+        window.__OPEN = 0;
+        let p = qAt(t) * .55;
+        if (t >= TL.wheelIn[0]) p = lerp(.50, .58, prog(t, TL.wheelIn[0], TL.wheelIn[1]));
+        MT.apply(p);
+        root.visible = true; bar.visible = false;
+        A.pose({ visible: false }); B.pose({ visible: false });
+        renderer.toneMappingExposure = .95;
+        return;
+    }
+    rig.position.set(0, FACTORY_RIG_Y, 0);
+    const night = t < TL.install[0];
+    window.__OPEN = night ? barAngle(t) / (Math.PI / 2) : ease(prog(t, TL.open[0], TL.open[1]));
+    MT.apply(.75);
+    valve.position.y = VALVE_Y; valve.visible = true;
+    root.visible = !night; bar.visible = night;
+    if (!night) {
+        const u = ease(prog(t, TL.drop[0], TL.drop[1]));
+        root.position.y += 9 * (1 - u) + Math.max(0, Math.sin((t - TL.drop[1]) * 30)) * .04 * Math.exp(-Math.max(0, t - TL.drop[1]) * 8) * (t > TL.drop[1] ? 1 : 0);
+        root.rotation.z = .05 * Math.sin(t * 1.7) * (1 - u);
+    } else root.rotation.z = 0;
+    // light: night sodium + moon, then morning sun through the windows
+    sodium.intensity = night ? 3.2 * (1 + .03 * Math.sin(t * 50) * (t < 2 ? 1 : .2)) : .6;
+    moon.intensity = night ? .55 : 0;
+    sun.intensity = night ? 0 : 2.4;
+    sun.castShadow = !night; sodium.castShadow = night;
+    hemi.intensity = night ? .1 : .55; hemi.color.setHex(night ? 0x8fa6cc : 0xffe2c4);
+    winMat.color.setHex(night ? 0x070b14 : 0xffe1b8);
+    cone.material.opacity = night ? .075 : .015;
+    shafts.forEach((s, i) => s.material.opacity = night ? 0 : .05 + .015 * Math.sin(t * .7 + i));
+    bulb.material.color.setHex(night ? 0xffb060 : 0x8a6a48);
+    renderer.toneMappingExposure = night ? .95 : 1.02;
+    // steam from the flange joint (night only), dust always drifting
+    steam.forEach(s => {
+        const k = s.userData.k, life = 2.6, ph = ((t + k * .37) % life) / life;
+        s.visible = night;
+        s.position.set(.3 + Math.sin(k * 2.1) * .3 + ph * 1.2, PIPE_Y + 1.6 + ph * 5.5, 1.1 + ph * .8);
+        const sc = .6 + ph * 3.2; s.scale.set(sc, sc, 1);
+        s.material.opacity = .22 * Math.sin(Math.PI * ph);
+    });
+    const pa = dustGeo.attributes.position.array;
+    for (let i = 0; i < DUST; i++) {
+        pa[i * 3] = dustBase[i * 3] + Math.sin(t * .3 + i) * .6; pa[i * 3 + 1] = (dustBase[i * 3 + 1] + t * .25) % 22; pa[i * 3 + 2] = dustBase[i * 3 + 2] + Math.cos(t * .23 + i * 1.3) * .6;
+    }
+    dustGeo.attributes.position.needsUpdate = true;
+    dust.material.color.setHex(night ? 0xffb070 : 0xffe6c8);
+    scene.updateMatrixWorld(true);
+    A.pose(poseA(t)); B.pose(poseB(t));
+}
+[rimCool, rimWarm, topL, MT.key, MT.fill, MT.kick].forEach(l => l.userData.i = l.intensity);
+
+/* ------------------------------------------------------------------
+   7. Camera
+------------------------------------------------------------------- */
+const SHOTS = [
+    { from: 0, to: TL.walkB[0] - .001, shake: .5, keys: [
+        [0, -1.02, .02, 46, -4.5, 6.4, -1.5, 0], [2.4, -.80, .06, 36, -6, 6.6, -2, 0], [4.6, -.66, .09, 31, -6.8, 6.8, -2.2, 0]] },
+    { from: TL.walkB[0], to: TL.slip2[0] - .2, shake: .9, keys: [
+        [4.6, -.52, .10, 33, -6.4, 6.6, -2.8, 0], [6.2, -.44, .08, 30, -7.0, 6.6, -2.8, 0], [9.4, -.34, .05, 26, -7.4, 6.6, -2.6, 0]] },
+    { from: TL.slip2[0] - .2, to: TL.wipe1[0] - .001, shake: .6, keys: [
+        [9.4, -1.12, .30, 36, -5.5, 5.2, -1.8, 0], [11.6, -1.02, .27, 32, -5.8, 5.2, -1.8, 0], [15, -.98, .26, 31, -5.8, 5.2, -1.8, 0]] },
+    { from: TL.wipe1[0], to: TL.nameplate[0] - .001, keys: [
+        [15.0, -1.10, .40, 46, -1.1, .3, 1.3, 0], [17.5, -.95, .34, 43, -.95, .3, 1.25, 0], [20.2, -.82, .30, 38, -.8, .25, 1.0, 0], [22.4, -.70, .27, 32, -1.0, .15, .5, 0],
+        [24.8, -.55, .25, 26, -.6, 0, .45, 0], [27.2, -.40, .22, 21, -.3, -.15, .45, 0], [29.6, -.26, .17, 19, -.1, -.35, .5, 0], [30.7, -.18, .12, 15, 0, -.9, .6, .02]] },
+    { from: TL.nameplate[0], to: TL.install[0] - .001, keys: [
+        [30.7, -.18, .12, 15, 0, -.9, .6, .02], [31.2, -.08, .04, 7.4, 0, -2.05, .74, -.08], [31.6, -.04, .03, 7.0, 0, -2.08, .74, -.1], [32.4, -.62, .22, 19, -1.6, -.6, .3, 0], [33.0, -.72, .24, 21, -1.8, -.6, .3, 0]] },
+    { from: TL.install[0], to: TL.easy[0] - .001, shake: .3, keys: [
+        [33.0, .62, .02, 42, -2.5, 10.5, 0, -.05], [35.7, .68, .07, 38, -3, 8.4, 0, -.06], [37.2, .72, .1, 36, -3.2, 7.6, .3, -.06]] },
+    { from: TL.easy[0], to: TL.resolve[0] - .001, shake: .25, keys: [
+        [37.2, .72, .1, 36, -3.2, 7.6, .3, -.06], [38.7, .80, .1, 36, -3.4, 7.8, .4, -.06], [41.0, .86, .12, 33, -3.6, 8.0, .5, -.06], [43.0, .92, .13, 34, -3.8, 7.6, .4, -.06], [45.2, .98, .14, 36, -4.2, 7.2, .2, -.06]] },
+    { from: TL.resolve[0], to: 99, shake: .2, keys: [
+        [45.2, -.62, .14, 30, -7.2, 7.2, -.5, -.06], [46.4, -.82, .16, 26, -7.9, 7.6, -.7, -.06], [47.6, -.86, .3, 34, -6.8, 6.2, -.5, -.03], [52.5, -.9, .45, 44, -5, 5, 0, 0]] }
+];
+function cr(p0, p1, p2, p3, t) { const t2 = t * t, t3 = t2 * t; return .5 * ((2 * p1) + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (-p0 + 3 * p1 - 3 * p2 + p3) * t3); }
+function camAt(t) {
+    const s = SHOTS.find(s => t >= s.from && t <= s.to) || SHOTS[SHOTS.length - 1], K = s.keys;
+    let out;
+    if (t <= K[0][0]) out = K[0].slice(1); else if (t >= K[K.length - 1][0]) out = K[K.length - 1].slice(1);
+    else {
+        let i = 0; while (t > K[i + 1][0]) i++;
+        const u = (t - K[i][0]) / (K[i + 1][0] - K[i][0]);
+        const k0 = K[Math.max(0, i - 1)], k1 = K[i], k2 = K[i + 1], k3 = K[Math.min(K.length - 1, i + 2)];
+        out = k1.slice(1).map((_, j) => cr(k0[j + 1], k1[j + 1], k2[j + 1], k3[j + 1], u));
+    }
+    const sh = s.shake || 0;   // operated-camera drift
+    out[0] += wob(t * .8, 1) * .012 * sh; out[1] += wob(t * .9 + 3, 1.2) * .008 * sh;
+    out[4] += wob(t * 2.1 + 5, 1.5) * .05 * sh;
+    return out;
+}
+const D = TALL ? 1 : .9;
+function setCamera(t) {
+    const [az, el, d0, tx, ty, tz, sy] = camAt(t), d = d0 * D;
+    camera.position.set(tx + d * Math.sin(az) * Math.cos(el), ty + d * Math.sin(el), tz + d * Math.cos(az) * Math.cos(el));
+    camera.lookAt(tx, ty, tz);
+    camera.setViewOffset(W, H, 0, H * sy, W, H);
+    return { az, el };
+}
+function setLook(t) {
+    const s0 = TL.scan[0], s1 = TL.scan[1];
+    if (t < s0 + .4) setScan(60, true);
+    else if (t < s1) setScan(lerp(3.4, -3.2, ease(prog(t, s0 + .4, s1))), true);
+    else setScan(-1e3, false);
+    if (!isStudio(t)) setScan(-1e3, false);
+    const on = isStudio(t) && t > s0 + .3 && t < s1 + .15;
+    sheet.visible = on; sheet.material.opacity = on ? .55 * Math.sin(Math.PI * prog(t, s0 + .3, s1 + .15)) + .25 : 0;
+    sheet.position.y = -solidPlane.constant;
+    const g = prog(t, 30.9, 31.9);
+    sweep.intensity = isStudio(t) && g > 0 && g < 1 ? 2.4 * Math.sin(Math.PI * g) : 0;
+    sweep.position.set(lerp(-1.6, 1.6, g), -1.8, 1.9);
+}
+
+/* ------------------------------------------------------------------
+   8. 2D background (studio glow / blueprint grid / plant bokeh)
+------------------------------------------------------------------- */
+const bg = $('bg'); bg.width = W; bg.height = H; const bx = bg.getContext('2d');
+const view = $('view'); view.width = W; view.height = H; const vx = view.getContext('2d');
+const freeze = $('freeze'); freeze.width = W; freeze.height = H; const fx = freeze.getContext('2d');
+function drawBg(t, cam) {
+    const studio = isStudio(t), night = t < TL.install[0];
+    if (studio) {
+        bx.fillStyle = '#04070e'; bx.fillRect(0, 0, W, H);
+        const warm = prog(t, TL.scan[0], TL.scan[1]), cy = H * .46;
+        const glow = bx.createRadialGradient(W * .5, cy, 0, W * .5, cy, H * .55);
+        glow.addColorStop(0, `rgba(${Math.round(lerp(12, 34, warm))},${Math.round(lerp(40, 48, warm))},${Math.round(lerp(78, 66, warm))},1)`);
+        glow.addColorStop(.55, 'rgba(10,20,38,.55)'); glow.addColorStop(1, 'rgba(4,7,14,0)');
+        bx.fillStyle = glow; bx.fillRect(0, 0, W, H);
+        const gridA = 1 - prog(t, TL.scan[0] + .6, TL.scan[1] + .4);
+        if (gridA > 0) {
+            const s = 54, off = (t * 6) % s; bx.lineWidth = 1;
+            for (let x = 0; x < W + s; x += s) { bx.strokeStyle = `rgba(63,217,255,${(x / s) % 5 === 0 ? .14 * gridA : .06 * gridA})`; bx.beginPath(); bx.moveTo(x + .5, 0); bx.lineTo(x + .5, H); bx.stroke(); }
+            for (let y = -s; y < H + s; y += s) { bx.strokeStyle = `rgba(63,217,255,${.06 * gridA})`; bx.beginPath(); bx.moveTo(0, y + off + .5); bx.lineTo(W, y + off + .5); bx.stroke(); }
+        }
+        return;
+    }
+    const g = bx.createLinearGradient(0, 0, 0, H);
+    if (night) { g.addColorStop(0, '#05070b'); g.addColorStop(.6, '#0a0c11'); g.addColorStop(1, '#07080b'); }
+    else { g.addColorStop(0, '#2b241e'); g.addColorStop(.55, '#3a2e24'); g.addColorStop(1, '#1d1915'); }
+    bx.fillStyle = g; bx.fillRect(0, 0, W, H);
+    // distant lamps as bokeh, drifting with the camera
+    for (let i = 0; i < 14; i++) {
+        const x = ((i * 397 + (cam ? cam.az * 900 : 0)) % (W + 300) + W + 300) % (W + 300) - 150, y = H * (.12 + (i * 0.137 % .45));
+        const r = 26 + (i * 37) % 60;
+        const gg = bx.createRadialGradient(x, y, 0, x, y, r);
+        const col = night ? (i % 3 ? '255,150,70' : '120,160,255') : '255,225,180';
+        gg.addColorStop(0, `rgba(${col},${night ? .16 : .12})`); gg.addColorStop(.7, `rgba(${col},${night ? .07 : .05})`); gg.addColorStop(1, `rgba(${col},0)`);
+        bx.fillStyle = gg; bx.fillRect(x - r, y - r, r * 2, r * 2);
+    }
+}
+
+/* ------------------------------------------------------------------
+   9. Typography + overlays
+------------------------------------------------------------------- */
+const GEAR_SVG = '<path d="' + $('lgA').getAttribute('d') + '" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M2.6 -2.3A3.5 3.5 0 1 0 2.6 2.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>';
+document.querySelectorAll('[data-gear]').forEach(el => el.innerHTML = GEAR_SVG);
+function splitWords(el) {
+    const walkN = node => [...node.childNodes].forEach(n => {
+        if (n.nodeType === 3) {
+            const frag = document.createDocumentFragment();
+            n.textContent.split(/(\s+)/).forEach(w => {
+                if (!w) return;
+                if (/^\s+$/.test(w)) { frag.appendChild(document.createTextNode(' ')); return; }
+                const o = document.createElement('span'); o.className = 'w'; const i = document.createElement('span'); i.className = 'wi'; i.textContent = w; o.appendChild(i); frag.appendChild(o);
+            });
+            n.replaceWith(frag);
+        } else walkN(n);
+    });
+    walkN(el); el._w = [...el.querySelectorAll('.wi')];
+}
+document.querySelectorAll('.k').forEach(el => { splitWords(el); if (el.dataset.y) el.style.top = (parseFloat(el.dataset.y) * H) + 'px'; });
+function reveal(id, t, tIn, tOut, stagger = .07, dur = .55) {
+    const el = $(id), out = tOut == null ? 0 : ease(prog(t, tOut, tOut + .35));
+    if (t < tIn - .01 || out >= 1) { el.style.visibility = 'hidden'; return; }
+    el.style.visibility = 'visible';
+    el._w.forEach((w, i) => { const u = easeOutExpo(prog(t, tIn + i * stagger, tIn + i * stagger + dur)); w.style.transform = `translateY(${(1 - u) * 110}%)`; });
+    el.style.opacity = 1 - out; el.style.transform = `translateY(${-out * 24}px)`;
+}
+
+const PARTS = [
+    { obj: () => MT.housing, n: '01', name: 'Housing', spec: 'Cast iron · IS 210 FG 200<br>ASTM A48 30A' },
+    { obj: () => MT.plate, n: '02', name: 'Mounting flange', spec: 'ISO 5211 · F07 / F10 / F12' },
+    { obj: () => MT.gear, n: '03', name: 'Worm wheel', spec: 'Ductile iron · SGI 500/7<br>Drives the valve stem directly' },
+    { obj: () => MT.worm, n: '04', name: 'Worm shaft', spec: 'Carbon steel · 45C8<br>A576-1045' },
+    { obj: () => MT.coverG, n: '05', name: 'Top cover', spec: 'Cast iron · IS 210 FG 200<br>4 × hex bolts seal the chamber' },
+    { obj: () => MT.stopBolts[0], n: '06', name: 'Travel stops', spec: 'Adjustable open / close limits<br>Lock nuts hold the setting' },
+    { obj: () => MT.indicator, n: '07', name: 'Position indicator', spec: 'Reads CLOSE → OPEN against<br>marks cast into the cover' }
+];
+const LAB_Y = H * (TALL ? .70 : .665); $('lab').style.top = LAB_Y + 'px';
+const box3 = new THREE.Box3(), v3 = V();
+function partAt(t) {
+    let idx = -1; TL.partTimes.forEach((ti, i) => { if (t >= ti + .2) idx = i; });
+    const lastOut = TL.partTimes[6] + TL.partStep - .1, lab = $('lab'), leader = $('leader');
+    if (idx < 0 || t > lastOut + .3) { lab.style.opacity = 0; leader.style.opacity = 0; return; }
+    const P = PARTS[idx], ts = TL.partTimes[idx] + .2, local = t - ts, stepLen = TL.partStep;
+    const inU = easeOutExpo(prog(local, 0, .45));
+    const outU = idx === 6 ? ease(prog(t, lastOut, lastOut + .3)) : ease(prog(local, stepLen - .2, stepLen));
+    $('pnum').textContent = `${P.n} / 07`;
+    if ($('pname').dataset.i !== P.n) { $('pname').textContent = P.name; $('pspec').innerHTML = P.spec; $('pname').dataset.i = P.n; }
+    lab.style.opacity = inU * (1 - outU); lab.style.transform = `translateY(${(1 - inU) * 40}px)`;
+    $('pbar').firstElementChild.style.width = ((idx + prog(local, 0, stepLen)) / 7 * 100) + '%';
+    box3.setFromObject(P.obj()); box3.getCenter(v3); v3.project(camera);
+    const x = (v3.x * .5 + .5) * W, y = (1 - (v3.y * .5 + .5)) * H, lx = 78, ly = LAB_Y - 26, draw = easeOut(prog(local, .1, .5));
+    $('ldLine').setAttribute('x1', lx); $('ldLine').setAttribute('y1', ly); $('ldLine').setAttribute('x2', lerp(lx, x, draw)); $('ldLine').setAttribute('y2', lerp(ly, y, draw));
+    ['ldDot', 'ldHalo'].forEach(k => { $(k).setAttribute('cx', x); $(k).setAttribute('cy', y); });
+    $('ldHalo').setAttribute('r', 20 + 26 * ((local * 1.2) % 1)); $('ldHalo').style.opacity = 1 - ((local * 1.2) % 1);
+    $('ldDot').style.opacity = draw; leader.style.opacity = (1 - outU) * prog(local, .05, .2);
+}
+
+/* phone call */
+$('phone').style.top = (H * (TALL ? .27 : .17)) + 'px';
+$('phWave').innerHTML = Array.from({ length: 28 }, () => '<i></i>').join('');
+const waveBars = [...$('phWave').children];
+function callAt(t) {
+    const c = $('callWrap'), a = easeOutExpo(prog(t, TL.call[0] + .15, TL.call[0] + .75));
+    const visible = t > TL.call[0] && t < TL.wipe1[1];
+    c.style.display = visible ? 'block' : 'none';
+    if (!visible) return;
+    const w = ease(prog(t, TL.wipe1[0], TL.wipe1[1]));
+    c.style.opacity = a * (1 - w);
+    $('phone').style.transform = `translateY(${(1 - a) * 160}px) scale(${.94 + .06 * a})`;
+    const connected = t >= TL.connect;
+    $('phTop').textContent = connected ? 'CONNECTED' : 'CALLING';
+    const secs = Math.max(0, Math.floor(t - TL.connect));
+    $('phStatus').textContent = connected ? `00:0${secs}` : 'RINGING';
+    [$('rg1'), $('rg2')].forEach((r, i) => { const ph = connected ? 0 : ((t * 1.4 + i * .5) % 1); r.style.transform = `scale(${1 + ph * .7})`; r.style.opacity = connected ? 0 : (1 - ph) * .9; });
+    waveBars.forEach((b, i) => { const amp = connected ? (.25 + .75 * Math.abs(Math.sin(t * 9 + i * .9) * Math.sin(t * 3.3 + i * .37))) : .12; b.style.height = (8 + amp * 60) + 'px'; b.style.opacity = connected ? 1 : .35; });
+}
+function freezeAt(t) {
+    const show = t >= TL.call[0] && t < TL.wipe1[1];
+    freeze.style.display = show ? 'block' : 'none';
+    if (!show) { $('weLine').style.opacity = 0; return; }
+    const u = prog(t, TL.call[0], TL.wipe1[1]), d = ease(prog(t, TL.call[0], TL.call[0] + .6));
+    freeze.style.transform = `scale(${1 + .08 * ease(u)})`;
+    freeze.style.filter = `saturate(${lerp(1, .12, d)}) brightness(${lerp(1, .55, d)}) blur(${lerp(0, 7, d)}px)`;
+    const w = ease(prog(t, TL.wipe1[0], TL.wipe1[1])), cx = W * .5, cy = H * (TALL ? .27 : .17) + 225 + 40;
+    freeze.style.webkitMaskImage = freeze.style.maskImage = w > 0 ? `conic-gradient(from 0deg at ${cx}px ${cy}px, transparent 0deg ${w * 360}deg, #000 ${w * 360}deg 360deg)` : 'none';
+    const we = $('weLine');
+    if (w > 0 && w < 1) { const a = (w * 360 - 90) * Math.PI / 180; we.setAttribute('x1', cx); we.setAttribute('y1', cy); we.setAttribute('x2', cx + Math.cos(a) * H * 1.5); we.setAttribute('y2', cy + Math.sin(a) * H * 1.5); we.style.opacity = Math.sin(Math.PI * w); }
+    else we.style.opacity = 0;
+}
+
+const DIAL_Y = H * (TALL ? .78 : .73); $('dial').style.top = DIAL_Y + 'px';
+function dialAt(t) {
+    const d = $('dialWrap'), a = prog(t, TL.open[0] - .4, TL.open[0]) * (1 - prog(t, TL.release[0], TL.release[0] + .3));
+    d.style.opacity = a; d.style.display = a > 0 ? 'block' : 'none';
+    const o = ease(prog(t, TL.open[0], TL.open[1]));
+    $('dialDeg').innerHTML = Math.round(o * 90) + '<sup>°</sup>'; $('dialDeg').style.color = o > .999 ? '#00f0ff' : '#eef3f8';
+    $('dialTrack').firstElementChild.style.width = (o * 100) + '%';
+}
+
+const lgA = $('lgA'), lgB = $('lgB'), LA = lgA.getTotalLength(), LB = lgB.getTotalLength();
+lgA.style.strokeDasharray = LA; lgB.style.strokeDasharray = LB;
+const LOGO_Y = H * (TALL ? .30 : .2); $('logo').style.top = LOGO_Y + 'px'; $('word').style.top = (LOGO_Y + 270) + 'px';
+[['en1', 430], ['en2', 515], ['en3', 640], ['en4', 702]].forEach(([id, dy]) => $(id).style.top = (LOGO_Y + dy) + 'px');
+function endAt(t) {
+    const e = $('end'), a = prog(t, TL.end[0], TL.end[0] + .7);
+    if (a <= 0) { e.style.display = 'none'; return; }
+    e.style.display = 'block'; e.style.opacity = a;
+    const t0 = TL.end[0], d1 = ease(prog(t, t0 + .3, t0 + 1.7)), d2 = ease(prog(t, t0 + 1.3, t0 + 2.0));
+    lgA.style.strokeDashoffset = LA * (1 - d1); lgB.style.strokeDashoffset = LB * (1 - d2);
+    $('logo').style.transform = `rotate(${(1 - d1) * -90}deg)`;
+    const wu = easeOutExpo(prog(t, t0 + 1.5, t0 + 2.8)); $('word').style.opacity = wu; $('word').style.letterSpacing = lerp(.42, .14, wu) + 'em';
+    reveal('en1', t, t0 + 2.1); reveal('en2', t, t0 + 2.55); reveal('en3', t, t0 + 2.95); reveal('en4', t, t0 + 3.15);
+}
+
+function copyAt(t, cam) {
+    // timestamp cards
+    const st = $('stamp');
+    st.style.top = (H * (TALL ? .79 : .76)) + 'px';
+    const n = prog(t, .3, .9) * (1 - prog(t, 2.3, 2.7)), m = prog(t, TL.install[0] + .25, TL.install[0] + .85) * (1 - prog(t, TL.install[0] + 2.6, TL.install[0] + 3.0));
+    st.style.opacity = Math.max(n, m); st.style.display = (n > 0 || m > 0) ? 'block' : 'none';
+    $('stampT').textContent = t < TL.install[0] ? '02:47' : '06:10'; $('stampL').textContent = t < TL.install[0] ? 'Night shift · Line 4' : 'Morning shift · Line 4';
+    st.style.transform = `translateY(${(1 - easeOutExpo(prog(t, t < 5 ? .3 : TL.install[0] + .25, t < 5 ? 1.1 : TL.install[0] + 1.05))) * 30}px)`;
+    reveal('s1', t, 2.7, 5.7); reveal('s2', t, 3.5, 5.7); reveal('s3', t, 4.35, 5.7);
+    reveal('s4', t, 6.6, 10.9); reveal('s5', t, 7.4, 10.9); reveal('s6', t, 9.65, 10.9);
+    reveal('c1', t, 13.45, 14.5);
+    reveal('bpTag', t, 15.4, 19.9); reveal('bp1', t, 15.55, 17.9); reveal('bp2', t, 18.2, 19.9);
+    reveal('anTag', t, 20.3, 30.4);
+    reveal('np1', t, 30.95, 32.2); reveal('np2', t, 31.25, 32.2, .04);
+    reveal('in1', t, 33.6, 36.9); reveal('in2', t, 34.3, 36.9); reveal('in3', t, TL.drop[1] + .05, 36.9, .03);
+    reveal('e1', t, TL.open[0] - .1, 42.9); reveal('e2', t, TL.open[0] + 1.2, 42.9);
+    reveal('h1', t, TL.release[0], 45.0); reveal('h2', t, TL.release[0] + .55, 45.0); reveal('h3', t, TL.release[0] + .9, 45.0, .03);
+    reveal('r1', t, 45.45, 47.4); reveal('r2', t, TL.bump, 47.4);
+    $('scrim').style.opacity = 1 - prog(t, TL.end[0], TL.end[0] + .4);
+    const g = prog(t, 30.9, 31.9), gl2 = $('glint');
+    gl2.style.top = (H * (TALL ? .555 : .58)) + 'px'; gl2.style.opacity = g > 0 && g < 1 ? Math.sin(Math.PI * g) * .8 : 0;
+    gl2.style.transform = `translateX(${lerp(-40, 40, g)}%) scaleY(${1 + Math.sin(Math.PI * g)})`;
+    // flashes: the slip, the cut to morning, the seat on the valve
+    const fl = $('flash');
+    const fA = .35 * Math.exp(-Math.max(0, t - TL.install[0]) * 4) * (t >= TL.install[0] ? 1 : 0);
+    const fB = .2 * Math.exp(-Math.max(0, t - TL.drop[1]) * 9) * (t >= TL.drop[1] ? 1 : 0);
+    const fC = .12 * Math.exp(-Math.max(0, t - TL.slip2[0]) * 10) * (t >= TL.slip2[0] && t < TL.slip2[0] + 1 ? 1 : 0);
+    fl.style.background = t >= TL.install[0] ? '#ffe2b8' : '#ffffff'; fl.style.opacity = fA + fB + fC;
+    // HUD only while we are inside the product
+    const hudA = Math.max(prog(t, TL.wipe1[1] - .2, TL.wipe1[1] + .3) * (1 - prog(t, TL.install[0] - .2, TL.install[0])), 0);
+    $('hud').style.opacity = hudA;
+    if (cam) $('hudR').innerHTML = `MT-30 · ${t < TL.scan[1] ? 'DWG' : 'ASSY'}<br>AZ ${((cam.az * 180 / Math.PI + 360) % 360).toFixed(1).padStart(5, '0')}°  EL ${(cam.el * 180 / Math.PI).toFixed(1)}°`;
+    // letterbox breathes in for the night scenes, out for the product
+    const lb = (1 - prog(t, TL.call[0], TL.call[0] + .6)) * 70 + prog(t, TL.install[0], TL.install[0] + .01) * (1 - prog(t, TL.end[0], TL.end[0] + .5)) * 0;
+    $('letter').style.setProperty('--lb', (TALL ? lb : lb * .6) + 'px');
+}
+
+/* ------------------------------------------------------------------
+   10. Frame
+------------------------------------------------------------------- */
+function samplesAt(t) {
+    if (t > TL.open[0] - .1 && t < TL.open[1] + .1) return 6;
+    if ((t > TL.slip1[0] && t < TL.slip1[0] + .8) || (t > TL.slip2[0] && t < TL.slip2[0] + .8)) return 4;
+    if (t > TL.drop[0] && t < TL.drop[1] + .1) return 3;
+    if (t > TL.wheelIn[0] && t < TL.wheelIn[1] + .1) return 4;
+    if (TL.partTimes.some(ti => t > ti && t < ti + TL.partMove + .05)) return 3;
+    if ((t > TL.walkB[0] && t < TL.walkB[1]) || (t > TL.walkA[0] && t < TL.walkA[1]) || (t > TL.bump - .5 && t < TL.bump + .7)) return 2;
+    return 1;
+}
+function render3d(t, ctx) {
+    const n = samplesAt(t), shutter = .5 / TL.FPS;
+    let cam;
+    for (let i = 0; i < n; i++) {
+        const ts = n === 1 ? t : t - shutter / 2 + shutter * (i / (n - 1));
+        setWorld(ts); setLook(ts); cam = setCamera(ts);
+        renderer.render(scene, camera);
+        ctx.globalAlpha = 1 / (i + 1); ctx.drawImage(gl, 0, 0);
+    }
+    ctx.globalAlpha = 1;
+    setWorld(t); setLook(t); return setCamera(t);
+}
+let frozenFor = -1;
+window.renderAt = async (t) => {
+    vx.clearRect(0, 0, W, H);
+    // the call is a freeze frame of the moment they gave up
+    if (t >= TL.call[0] && t < TL.wipe1[1] && frozenFor !== TL.call[0]) {
+        const tf = TL.call[0] - .001;
+        const c = render3d(tf, vx); drawBg(tf, c);
+        fx.clearRect(0, 0, W, H); fx.drawImage(bg, 0, 0); fx.drawImage(view, 0, 0);
+        vx.clearRect(0, 0, W, H); frozenFor = TL.call[0];
+    }
+    let cam = null;
+    const show3d = !(t >= TL.call[0] && t < TL.wipe1[0]) && t < TL.end[0] + .8;
+    if (show3d) cam = render3d(t, vx);
+    drawBg(t, cam);
+    freezeAt(t); callAt(t); copyAt(t, cam); partAt(t); dialAt(t); endAt(t);
+    await new Promise(r => requestAnimationFrame(() => r()));
+    return true;
+};
+window.READY = true;
+})().catch(e => { window.READY_ERROR = String(e && e.stack || e); console.error(e); });
+</script>
+</body>
+</html>

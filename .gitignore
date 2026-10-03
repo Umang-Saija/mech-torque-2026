@@ -2,3 +2,6 @@ node_modules/
 .vercel/
 .promo-chrome-profile/
 *.log
+# promo video: keep only the finished films
+promo-video/out/*
+!promo-video/out/MechTorque-*.mp4
