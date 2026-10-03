@@ -17,6 +17,13 @@ const pic = f => path.join(OUT, comp === 'story' ? `story-picture-${f}.mp4` : `p
 const name = f => path.join(OUT, `MechTorque-${comp === 'story' ? 'Story' : 'Product'}-${f}.mp4`);
 
 for (const f of ['9x16', '4x5']) {
+    // a picture rendered in parallel chunks (story-9x16-a.mp4, -b, -c1 ...) is joined first
+    const chunks = fs.readdirSync(OUT).filter(n => n.startsWith(`${comp}-${f}-`) && n.endsWith('.mp4')).sort();
+    if (!fs.existsSync(pic(f)) && chunks.length) {
+        const list = path.join(OUT, `concat-${f}.txt`);
+        fs.writeFileSync(list, chunks.map(n => `file '${path.join(OUT, n)}'`).join('\n') + '\n');
+        execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', list, '-c', 'copy', pic(f)], { stdio: 'inherit' });
+    }
     if (!fs.existsSync(pic(f))) { console.log('skip (no picture yet):', pic(f)); continue; }
     execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', pic(f), '-i', audio,
         '-filter_complex', '[0:v]noise=c0s=5:c0f=t+u,vignette=angle=PI/5:mode=forward,format=yuv420p[v];[1:a]loudnorm=I=-14:TP=-1:LRA=11,aresample=48000[a]',
