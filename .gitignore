@@ -5,3 +5,5 @@ node_modules/
 # promo video: keep only the finished films
 promo-video/out/*
 !promo-video/out/MechTorque-*.mp4
+promo-video/VoiceSample-*.mp4
+promo-video/MechTorque-Story-PREVIEW-*.mp4
