@@ -819,7 +819,8 @@ $('phone').style.top = (H * (TALL ? .27 : .17)) + 'px';
 $('phWave').innerHTML = Array.from({ length: 28 }, () => '<i></i>').join('');
 const waveBars = [...$('phWave').children];
 function callAt(t) {
-    const c = $('callWrap'), a = easeOutExpo(prog(t, TL.call[0] + .15, TL.call[0] + .75));
+    const CD = OVERLAY ? 1.0 : 0;   // over live footage, hold the card back so the phone shot reads first
+    const c = $('callWrap'), a = easeOutExpo(prog(t, TL.call[0] + .15 + CD, TL.call[0] + .75 + CD));
     const visible = t > TL.call[0] && t < TL.wipe1[1];
     c.style.display = visible ? 'block' : 'none';
     if (!visible) return;
