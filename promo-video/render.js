@@ -45,7 +45,7 @@ const server = http.createServer((req, res) => {
     const page = await browser.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
     page.on('console', m => { if (m.type() === 'error') console.error('[page]', m.text()); });
     page.on('pageerror', e => console.error('[pageerror]', e.message));
-    await page.goto(`http://127.0.0.1:${port}/promo-video/${COMP}.html?w=${W}&h=${H}${args.people === '0' ? '&people=0' : ''}${args.clean ? '&clean=1' : ''}`);
+    await page.goto(`http://127.0.0.1:${port}/promo-video/${COMP}.html?w=${W}&h=${H}${args.people === '0' ? '&people=0' : ''}${args.clean ? '&clean=1' : ''}${args.overlay ? '&overlay=1' : ''}`);
     await page.waitForFunction(() => window.READY || window.READY_ERROR, null, { timeout: 120000 });
     const err = await page.evaluate(() => window.READY_ERROR);
     if (err) throw new Error(err);
@@ -61,12 +61,12 @@ const server = http.createServer((req, res) => {
     } else {
         const out = path.resolve(args.out || path.join(OUT_DIR, `picture-${W}x${H}.mp4`));
         const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'png', '-i', '-',
-            '-c:v', 'libx264', '-preset', 'slow', '-crf', '14', '-pix_fmt', 'yuv420p', out], { stdio: ['pipe', 'inherit', 'inherit'] });
+            ...(args.overlay ? ['-c:v', 'png', '-pix_fmt', 'rgba'] : ['-c:v', 'libx264', '-preset', 'slow', '-crf', '14', '-pix_fmt', 'yuv420p']), out], { stdio: ['pipe', 'inherit', 'inherit'] });
         const n0 = Math.round(from * FPS), n1 = Math.round(to * FPS);
         const t0 = Date.now();
         for (let n = n0; n < n1; n++) {
             await page.evaluate(t => window.renderAt(t), n / FPS);
-            const buf = await page.screenshot({ type: 'png', clip: { x: 0, y: 0, width: W, height: H }, timeout: 180000 });
+            const buf = await page.screenshot({ type: 'png', omitBackground: !!args.overlay, clip: { x: 0, y: 0, width: W, height: H }, timeout: 180000 });
             if (!ff.stdin.write(buf)) await new Promise(r => ff.stdin.once('drain', r));
             if ((n - n0) % 30 === 0) {
                 const done = n - n0 + 1, el = (Date.now() - t0) / 1000;

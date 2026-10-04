@@ -168,6 +168,8 @@ const qs = new URLSearchParams(location.search);
 const W = +qs.get('w') || 1080, H = +qs.get('h') || 1920;
 const ASP = W / H, TALL = ASP < .7;
 const PEOPLE = qs.get('people') !== '0';
+const OVERLAY = qs.get('overlay') === '1';   // text/UI only on a transparent background, for compositing over live footage
+if (OVERLAY) document.head.insertAdjacentHTML('beforeend', '<style>html,body,#stage{background:transparent!important}#bg,#view,#freeze{display:none!important}</style>');
 if (qs.get('clean') === '1') document.head.insertAdjacentHTML('beforeend', '<style>#copy,#hud,#dialWrap,#callout,#lines,#letter,#scrim,#glintWrap,#flash{display:none!important}</style>');   // people=0: product-only plates for compositing with live-action footage
 const stage = document.getElementById('stage');
 stage.style.width = W + 'px'; stage.style.height = H + 'px';
@@ -934,16 +936,16 @@ let frozenFor = -1;
 window.renderAt = async (t) => {
     vx.clearRect(0, 0, W, H);
     // the call is a freeze frame of the moment they gave up
-    if (t >= TL.call[0] && t < TL.wipe1[1] && frozenFor !== TL.call[0]) {
+    if (!OVERLAY && t >= TL.call[0] && t < TL.wipe1[1] && frozenFor !== TL.call[0]) {
         const tf = TL.call[0] - .001;
         const c = render3d(tf, vx); drawBg(tf, c);
         fx.clearRect(0, 0, W, H); fx.drawImage(bg, 0, 0); fx.drawImage(view, 0, 0);
         vx.clearRect(0, 0, W, H); frozenFor = TL.call[0];
     }
     let cam = null;
-    const show3d = !(t >= TL.call[0] && t < TL.wipe1[0]) && t < TL.end[0] + .8;
+    const show3d = !OVERLAY && !(t >= TL.call[0] && t < TL.wipe1[0]) && t < TL.end[0] + .8;
     if (show3d) cam = render3d(t, vx);
-    drawBg(t, cam);
+    if (!OVERLAY) drawBg(t, cam);
     freezeAt(t); callAt(t); copyAt(t, cam); partAt(t); dialAt(t); endAt(t);
     await new Promise(r => requestAnimationFrame(() => r()));
     return true;
